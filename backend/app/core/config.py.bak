@@ -1,0 +1,27 @@
+from pathlib import Path
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+BASE_DIR = Path(__file__).resolve().parents[2]
+
+
+class Settings(BaseSettings):
+    APP_NAME: str = "TempleOS"
+    APP_ENV: str = "development"
+
+    DATABASE_URL: str
+
+    JWT_SECRET: str = "development-secret-change-me"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+
+    model_config = SettingsConfigDict(
+        env_file=BASE_DIR / ".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
+
+settings = Settings()
