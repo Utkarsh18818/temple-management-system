@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text
+from sqlalchemy import DateTime, ForeignKey, Index, Numeric, String, Text, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -11,6 +11,25 @@ from app.models.base import Base, TimestampMixin, UUIDMixin
 
 class Payment(UUIDMixin, TimestampMixin, Base):
     __tablename__ = "payments"
+
+    __table_args__ = (
+        Index(
+            "uq_payments_active_donation_id",
+            "donation_id",
+            unique=True,
+            postgresql_where=text(
+                "donation_id IS NOT NULL AND status IN ('PENDING', 'SUCCESS')"
+            ),
+        ),
+        Index(
+            "uq_payments_active_booking_id",
+            "booking_id",
+            unique=True,
+            postgresql_where=text(
+                "booking_id IS NOT NULL AND status IN ('PENDING', 'SUCCESS')"
+            ),
+        ),
+    )
 
     temple_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -37,6 +56,13 @@ class Payment(UUIDMixin, TimestampMixin, Base):
         String(100),
         unique=True,
         nullable=False,
+        index=True,
+    )
+
+    gateway_order_id: Mapped[str | None] = mapped_column(
+        String(150),
+        unique=True,
+        nullable=True,
         index=True,
     )
 

@@ -15,10 +15,62 @@ oauth2_scheme = OAuth2PasswordBearer(
 )
 
 
+optional_oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/api/v1/auth/login",
+    auto_error=False,
+)
+
+
 def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ) -> User:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    try:
+        payload = jwt.decode(
+            token,
+            settings.JWT_SECRET,
+            algorithms=[settings.JWT_ALGORITHM],
+        )
+
+        user_id = payload.get("sub")
+
+        if not user_id:
+            raise credentials_exception
+
+    except JWTError:
+        raise credentials_exception
+
+    user = db.get(User, user_id)
+
+    if not user or not user.is_active:
+        raise credentials_exception
+
+    return user
+
+
+def get_optional_current_user(
+    token: str | None = Depends(optional_oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """
+    Return the authenticated user when a valid bearer token
+    is supplied.
+
+    Return None for guests.
+
+    Invalid tokens are rejected rather than silently treated
+    as guest requests.
+    """
+
+    if not token:
+        return None
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -53,8 +105,10 @@ def require_roles(*allowed_roles: str) -> Callable:
         current_user: User = Depends(get_current_user),
         db: Session = Depends(get_db),
     ) -> User:
-
-        role = db.get(Role, current_user.role_id)
+        role = db.get(
+            Role,
+            current_user.role_id,
+        )
 
         if not role:
             raise HTTPException(

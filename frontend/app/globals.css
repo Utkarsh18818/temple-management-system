@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+:root {
+  /* TempleOS — Radha-Krishna visual identity */
+  --krishna-blue: #183b63;
+  --krishna-blue-deep: #102c4a;
+  --radha-rose: #b85c73;
+  --radha-rose-soft: #d98b9d;
+  --peacock-green: #287c72;
+  --antique-gold: #b08a45;
+
+  --ivory: #fbf7ef;
+  --ivory-deep: #f3ecdf;
+  --temple-white: #fffdf8;
+
+  --earth-brown: #59483d;
+  --earth-brown-deep: #332a25;
+
+  --foreground: #332a25;
+  --muted-foreground: #74685f;
+  --border: #e6dccd;
+
+  --background: var(--ivory);
+  --card: var(--temple-white);
+
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Noto Sans", Arial, sans-serif;
+  --font-devanagari: "Noto Serif Devanagari", serif;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-krishna: var(--krishna-blue);
+  --color-krishna-deep: var(--krishna-blue-deep);
+
+  --color-radha: var(--radha-rose);
+  --color-radha-soft: var(--radha-rose-soft);
+
+  --color-peacock: var(--peacock-green);
+  --color-gold: var(--antique-gold);
+
+  --color-ivory: var(--ivory);
+  --color-ivory-deep: var(--ivory-deep);
+  --color-temple-white: var(--temple-white);
+
+  --color-earth: var(--earth-brown);
+  --color-earth-deep: var(--earth-brown-deep);
+
+  --color-muted: var(--muted-foreground);
+  --color-border: var(--border);
+
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+  --font-devanagari: var(--font-devanagari);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--background);
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(
+      circle at 50% -20%,
+      rgba(176, 138, 69, 0.08),
+      transparent 38%
+    ),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+::selection {
+  background: rgba(184, 92, 115, 0.18);
+  color: var(--earth-brown-deep);
+}
+
+/* English / Latin display typography */
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* Indian-language typography */
+.font-devanagari,
+[lang="hi"],
+[lang="mr"],
+[lang="sa"] {
+  font-family: var(--font-devanagari);
+}
+
+/* Keep UI controls readable when Indian scripts are active. */
+[lang="hi"] button,
+[lang="hi"] input,
+[lang="hi"] textarea,
+[lang="hi"] select,
+[lang="mr"] button,
+[lang="mr"] input,
+[lang="mr"] textarea,
+[lang="mr"] select,
+[lang="sa"] button,
+[lang="sa"] input,
+[lang="sa"] textarea,
+[lang="sa"] select {
+  font-family: var(--font-sans), var(--font-devanagari);
+}
+
+/* Accessible focus treatment */
+:focus-visible {
+  outline: 3px solid rgba(40, 124, 114, 0.35);
+  outline-offset: 3px;
+}
+
+/* Respect reduced-motion preferences. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

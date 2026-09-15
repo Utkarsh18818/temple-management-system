@@ -13,7 +13,16 @@ from app.api.v1.donations import router as donation_router
 from app.api.v1.events import router as event_router
 from app.api.v1.festivals import router as festival_router
 from app.api.v1.payments import router as payment_router
+from app.api.v1.public import router as public_router
+from app.api.v1.public_auth import router as public_auth_router
+from app.api.v1.public_bookings import router as public_booking_router
+from app.api.v1.public_donations import router as public_donation_router
+from app.api.v1.public_payment_webhook import (
+    router as public_payment_webhook_router,
+)
+from app.api.v1.public_payments import router as public_payment_router
 from app.api.v1.receipts import router as receipt_router
+from app.api.v1.roles import router as role_router
 from app.api.v1.seva_slots import router as seva_slot_router
 from app.api.v1.sevas import router as seva_router
 from app.api.v1.temples import router as temple_router
@@ -50,8 +59,19 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "Accept"],
+    allow_methods=[
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS",
+    ],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+        "Accept",
+    ],
 )
 
 
@@ -115,6 +135,11 @@ app.include_router(
 )
 
 app.include_router(
+    role_router,
+    prefix="/api/v1",
+)
+
+app.include_router(
     devotee_router,
     prefix="/api/v1",
 )
@@ -126,6 +151,36 @@ app.include_router(
 
 app.include_router(
     seva_slot_router,
+    prefix="/api/v1",
+)
+
+app.include_router(
+    public_router,
+    prefix="/api/v1",
+)
+
+app.include_router(
+    public_auth_router,
+    prefix="/api/v1",
+)
+
+app.include_router(
+    public_booking_router,
+    prefix="/api/v1",
+)
+
+app.include_router(
+    public_donation_router,
+    prefix="/api/v1",
+)
+
+app.include_router(
+    public_payment_router,
+    prefix="/api/v1",
+)
+
+app.include_router(
+    public_payment_webhook_router,
     prefix="/api/v1",
 )
 
@@ -155,7 +210,9 @@ def health_check():
         }
 
     except Exception:
-        logger.exception("Health check database connection failed")
+        logger.exception(
+            "Health check database connection failed"
+        )
 
         return {
             "status": "unhealthy",

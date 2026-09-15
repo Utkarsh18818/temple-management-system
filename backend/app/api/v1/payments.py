@@ -42,6 +42,7 @@ router = APIRouter(
 # HELPERS
 # ============================================================
 
+
 def make_json_safe(value: Any) -> Any:
     """
     Convert SQLAlchemy/Python values into JSON-safe values
@@ -82,9 +83,7 @@ def payment_snapshot(payment: Payment) -> dict[str, Any]:
             "currency": payment.currency,
             "payment_method": payment.payment_method,
             "gateway": payment.gateway,
-            "gateway_transaction_id": (
-                payment.gateway_transaction_id
-            ),
+            "gateway_transaction_id": payment.gateway_transaction_id,
             "status": payment.status,
             "paid_at": payment.paid_at,
             "failure_reason": payment.failure_reason,
@@ -171,9 +170,78 @@ def generate_transaction_id(
     return f"{prefix}{sequence:05d}"
 
 
+def get_active_payment_for_donation(
+    db: Session,
+    donation_id: uuid.UUID,
+    exclude_payment_id: uuid.UUID | None = None,
+) -> Payment | None:
+    """
+    Return an existing active payment for a donation.
+
+    Active payment statuses are PENDING and SUCCESS.
+    """
+    query = select(Payment).where(
+        Payment.donation_id == donation_id,
+        Payment.status.in_(("PENDING", "SUCCESS")),
+    )
+
+    if exclude_payment_id is not None:
+        query = query.where(
+            Payment.id != exclude_payment_id
+        )
+
+    return db.scalar(query)
+
+
+def get_active_payment_for_booking(
+    db: Session,
+    booking_id: uuid.UUID,
+    exclude_payment_id: uuid.UUID | None = None,
+) -> Payment | None:
+    """
+    Return an existing active payment for a booking.
+
+    Active payment statuses are PENDING and SUCCESS.
+    """
+    query = select(Payment).where(
+        Payment.booking_id == booking_id,
+        Payment.status.in_(("PENDING", "SUCCESS")),
+    )
+
+    if exclude_payment_id is not None:
+        query = query.where(
+            Payment.id != exclude_payment_id
+        )
+
+    return db.scalar(query)
+
+
+def get_payment_by_gateway_transaction_id(
+    db: Session,
+    gateway_transaction_id: str,
+    exclude_payment_id: uuid.UUID | None = None,
+) -> Payment | None:
+    """
+    Return an existing payment using the supplied gateway
+    transaction reference.
+    """
+    query = select(Payment).where(
+        Payment.gateway_transaction_id
+        == gateway_transaction_id
+    )
+
+    if exclude_payment_id is not None:
+        query = query.where(
+            Payment.id != exclude_payment_id
+        )
+
+    return db.scalar(query)
+
+
 # ============================================================
 # CREATE PAYMENT
 # ============================================================
+
 
 @router.post(
     "",
@@ -199,6 +267,9 @@ def create_payment(
     the linked donation or booking amount.
 
     Payment status always starts as PENDING.
+
+    Only one active payment (PENDING or SUCCESS)
+    is allowed for a donation or booking at a time.
     """
 
     # --------------------------------------------------------
@@ -309,14 +380,52 @@ def create_payment(
         )
 
     # --------------------------------------------------------
+    # Active payment uniqueness
+    # --------------------------------------------------------
+
+    if request.donation_id is not None:
+        existing_active_payment = (
+            get_active_payment_for_donation(
+                db,
+                request.donation_id,
+            )
+        )
+
+        if existing_active_payment:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=(
+                    "An active payment already exists "
+                    "for this donation"
+                ),
+            )
+
+    if request.booking_id is not None:
+        existing_active_payment = (
+            get_active_payment_for_booking(
+                db,
+                request.booking_id,
+            )
+        )
+
+        if existing_active_payment:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=(
+                    "An active payment already exists "
+                    "for this booking"
+                ),
+            )
+
+    # --------------------------------------------------------
     # Gateway transaction uniqueness
     # --------------------------------------------------------
 
     if request.gateway_transaction_id:
-        existing_gateway_payment = db.scalar(
-            select(Payment).where(
-                Payment.gateway_transaction_id
-                == request.gateway_transaction_id
+        existing_gateway_payment = (
+            get_payment_by_gateway_transaction_id(
+                db,
+                request.gateway_transaction_id,
             )
         )
 
@@ -391,7 +500,7 @@ def create_payment(
             status_code=status.HTTP_409_CONFLICT,
             detail=(
                 "Payment could not be created because "
-                "a unique transaction or gateway "
+                "an active payment or unique transaction "
                 "reference already exists"
             ),
         )
@@ -406,6 +515,7 @@ def create_payment(
 # ============================================================
 # LIST PAYMENTS
 # ============================================================
+
 
 @router.get(
     "",
@@ -504,6 +614,7 @@ def list_payments(
 # GET PAYMENT
 # ============================================================
 
+
 @router.get(
     "/{payment_id}",
     response_model=PaymentResponse,
@@ -529,6 +640,7 @@ def get_payment(
 # ============================================================
 # UPDATE PAYMENT
 # ============================================================
+
 
 @router.put(
     "/{payment_id}",
@@ -590,10 +702,22 @@ def update_payment(
             )
 
         allowed_transitions = {
-            "PENDING": {"PENDING", "SUCCESS", "FAILED"},
-            "FAILED": {"FAILED", "PENDING"},
-            "SUCCESS": {"SUCCESS", "REFUNDED"},
-            "REFUNDED": {"REFUNDED"},
+            "PENDING": {
+                "PENDING",
+                "SUCCESS",
+                "FAILED",
+            },
+            "FAILED": {
+                "FAILED",
+                "PENDING",
+            },
+            "SUCCESS": {
+                "SUCCESS",
+                "REFUNDED",
+            },
+            "REFUNDED": {
+                "REFUNDED",
+            },
         }
 
         current_status = payment.status
@@ -606,6 +730,82 @@ def update_payment(
                     f"{current_status} -> {requested_status}"
                 ),
             )
+
+    # --------------------------------------------------------
+    # Gateway transaction uniqueness
+    # --------------------------------------------------------
+
+    if "gateway_transaction_id" in update_data:
+        requested_gateway_transaction_id = (
+            update_data["gateway_transaction_id"]
+        )
+
+        if requested_gateway_transaction_id:
+            existing_gateway_payment = (
+                get_payment_by_gateway_transaction_id(
+                    db,
+                    requested_gateway_transaction_id,
+                    exclude_payment_id=payment.id,
+                )
+            )
+
+            if existing_gateway_payment:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=(
+                        "Gateway transaction ID "
+                        "already exists"
+                    ),
+                )
+
+    # --------------------------------------------------------
+    # Active payment uniqueness
+    # --------------------------------------------------------
+
+    requested_status = update_data.get(
+        "status",
+        payment.status,
+    )
+
+    if requested_status in {
+        "PENDING",
+        "SUCCESS",
+    }:
+        if payment.donation_id:
+            existing_active_payment = (
+                get_active_payment_for_donation(
+                    db,
+                    payment.donation_id,
+                    exclude_payment_id=payment.id,
+                )
+            )
+
+            if existing_active_payment:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=(
+                        "An active payment already exists "
+                        "for this donation"
+                    ),
+                )
+
+        if payment.booking_id:
+            existing_active_payment = (
+                get_active_payment_for_booking(
+                    db,
+                    payment.booking_id,
+                    exclude_payment_id=payment.id,
+                )
+            )
+
+            if existing_active_payment:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=(
+                        "An active payment already exists "
+                        "for this booking"
+                    ),
+                )
 
     try:
         # ----------------------------------------------------
@@ -719,6 +919,17 @@ def update_payment(
 
         db.commit()
         db.refresh(payment)
+
+    except IntegrityError:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "Payment update conflicts with an existing "
+                "active payment or unique gateway reference"
+            ),
+        )
 
     except Exception:
         db.rollback()

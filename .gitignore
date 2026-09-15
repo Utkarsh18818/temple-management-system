@@ -41,7 +41,16 @@ node_modules/
 out/
 dist/
 
+# Runtime / generated application data
+backend/storage/
+*.sqlite
+*.sqlite3
+
 # Temporary files
 *.tmp
 *.temp
 *.swp
+
+# Local reports / generated artifacts
+*.bak
+*.backup

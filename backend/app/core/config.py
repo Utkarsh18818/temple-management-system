@@ -21,6 +21,14 @@ class Settings(BaseSettings):
         "http://localhost:5173"
     )
 
+    # --------------------------------------------------------
+    # Razorpay
+    # --------------------------------------------------------
+
+    RAZORPAY_KEY_ID: str = ""
+    RAZORPAY_KEY_SECRET: str = ""
+    RAZORPAY_WEBHOOK_SECRET: str = ""
+
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env",
         env_file_encoding="utf-8",
@@ -69,6 +77,21 @@ class Settings(BaseSettings):
         if "*" in self.cors_origins_list:
             raise RuntimeError(
                 "Wildcard CORS origins are not allowed in production"
+            )
+
+        if not self.RAZORPAY_KEY_ID:
+            raise RuntimeError(
+                "RAZORPAY_KEY_ID must be configured in production"
+            )
+
+        if not self.RAZORPAY_KEY_SECRET:
+            raise RuntimeError(
+                "RAZORPAY_KEY_SECRET must be configured in production"
+            )
+
+        if not self.RAZORPAY_WEBHOOK_SECRET:
+            raise RuntimeError(
+                "RAZORPAY_WEBHOOK_SECRET must be configured in production"
             )
 
 

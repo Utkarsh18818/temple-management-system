@@ -1,0 +1,446 @@
+import uuid
+from datetime import datetime, timezone
+from decimal import Decimal
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, EmailStr, Field
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from app.api.v1.donations import generate_donation_number
+from app.core.database import get_db
+from app.core.dependencies import get_optional_current_user
+from app.core.numbering import acquire_numbering_lock
+from app.models import Devotee, Donation, Payment, Temple, User
+from app.services.razorpay import razorpay_service
+
+
+router = APIRouter(
+    prefix="/public/donations",
+    tags=["Public Donations"],
+)
+
+
+class PublicDonationCreateRequest(BaseModel):
+    temple_id: uuid.UUID
+
+    amount: Decimal = Field(
+        gt=0,
+        decimal_places=2,
+    )
+
+    donation_type: str = Field(
+        default="GENERAL",
+        min_length=2,
+        max_length=50,
+    )
+
+    purpose: str | None = Field(
+        default=None,
+        max_length=200,
+    )
+
+    donor_name: str = Field(
+        min_length=2,
+        max_length=150,
+    )
+
+    donor_phone: str | None = Field(
+        default=None,
+        max_length=20,
+    )
+
+    donor_email: EmailStr | None = None
+
+    pan_number: str | None = Field(
+        default=None,
+        max_length=20,
+    )
+
+    notes: str | None = None
+
+
+class PublicDonationCreateResponse(BaseModel):
+    donation_id: uuid.UUID
+    donation_number: str
+    amount: Decimal
+    currency: str
+    payment_id: uuid.UUID
+    transaction_id: str
+    razorpay_order_id: str
+    razorpay_key_id: str
+
+
+class PublicDonationPaymentVerifyRequest(BaseModel):
+    razorpay_order_id: str = Field(min_length=1)
+    razorpay_payment_id: str = Field(min_length=1)
+    razorpay_signature: str = Field(min_length=1)
+
+
+class PublicDonationPaymentVerifyResponse(BaseModel):
+    donation_id: uuid.UUID
+    donation_number: str
+    payment_id: uuid.UUID
+    transaction_id: str
+    razorpay_order_id: str
+    razorpay_payment_id: str
+    amount: Decimal
+    currency: str
+    payment_status: str
+    donation_status: str
+
+
+def get_current_devotee(
+    current_user: User,
+    db: Session,
+) -> Devotee | None:
+    conditions = []
+
+    if current_user.email:
+        conditions.append(
+            Devotee.email == current_user.email
+        )
+
+    if current_user.phone:
+        conditions.append(
+            Devotee.phone == current_user.phone
+        )
+
+    if not conditions:
+        return None
+
+    return db.scalar(
+        select(Devotee)
+        .where(
+            Devotee.temple_id == current_user.temple_id,
+            *conditions,
+        )
+    )
+
+
+def generate_transaction_id(
+    db: Session,
+) -> str:
+    today = datetime.now(timezone.utc).date()
+
+    prefix = f"TXN-{today.strftime('%Y%m%d')}-"
+    scope = f"payment:{today.strftime('%Y%m%d')}"
+
+    acquire_numbering_lock(
+        db,
+        scope,
+    )
+
+    existing = db.scalars(
+        select(Payment.transaction_id).where(
+            Payment.transaction_id.like(
+                f"{prefix}%"
+            )
+        )
+    ).all()
+
+    used_numbers: set[int] = set()
+
+    for transaction_id in existing:
+        try:
+            used_numbers.add(
+                int(
+                    transaction_id.replace(
+                        prefix,
+                        "",
+                        1,
+                    )
+                )
+            )
+        except (ValueError, TypeError):
+            continue
+
+    sequence = 1
+
+    while sequence in used_numbers:
+        sequence += 1
+
+    return f"{prefix}{sequence:05d}"
+
+
+@router.post(
+    "",
+    response_model=PublicDonationCreateResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_public_donation(
+    request: PublicDonationCreateRequest,
+    current_user: User | None = Depends(
+        get_optional_current_user
+    ),
+    db: Session = Depends(get_db),
+):
+    """
+    Create a public donation and its Razorpay order.
+
+    Guests are allowed.
+
+    Authenticated devotees are automatically linked to
+    their Devotee record when they belong to the selected
+    temple.
+    """
+
+    temple = db.scalar(
+        select(Temple).where(
+            Temple.id == request.temple_id,
+            Temple.is_active.is_(True),
+        )
+    )
+
+    if not temple:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Temple not found or inactive.",
+        )
+
+    devotee = None
+
+    if (
+        current_user is not None
+        and current_user.temple_id == request.temple_id
+    ):
+        devotee = get_current_devotee(
+            current_user=current_user,
+            db=db,
+        )
+
+    donated_at = datetime.now(timezone.utc)
+
+    donation_number = generate_donation_number(
+        donated_at,
+        db,
+    )
+
+    donation = Donation(
+        temple_id=request.temple_id,
+        devotee_id=(
+            devotee.id
+            if devotee
+            else None
+        ),
+        donation_number=donation_number,
+        amount=request.amount,
+        donation_type=request.donation_type,
+        purpose=request.purpose,
+        donor_name=request.donor_name,
+        donor_phone=request.donor_phone,
+        donor_email=request.donor_email,
+        pan_number=request.pan_number,
+        status="PENDING",
+        donated_at=donated_at,
+        notes=request.notes,
+    )
+
+    try:
+        db.add(donation)
+        db.flush()
+
+        transaction_id = generate_transaction_id(
+            db
+        )
+
+        razorpay_order = razorpay_service.create_order(
+            amount=donation.amount,
+            currency="INR",
+            receipt=donation.donation_number,
+        )
+
+        razorpay_order_id = razorpay_order["id"]
+
+        payment = Payment(
+            temple_id=donation.temple_id,
+            donation_id=donation.id,
+            booking_id=None,
+            transaction_id=transaction_id,
+            gateway_order_id=razorpay_order_id,
+            amount=donation.amount,
+            currency="INR",
+            payment_method="ONLINE",
+            gateway="RAZORPAY",
+            status="PENDING",
+        )
+
+        db.add(payment)
+        db.commit()
+
+        db.refresh(donation)
+        db.refresh(payment)
+
+        return PublicDonationCreateResponse(
+            donation_id=donation.id,
+            donation_number=donation.donation_number,
+            amount=donation.amount,
+            currency=payment.currency,
+            payment_id=payment.id,
+            transaction_id=payment.transaction_id,
+            razorpay_order_id=payment.gateway_order_id,
+            razorpay_key_id=(
+                razorpay_service._get_key_id()
+            ),
+        )
+
+    except Exception:
+        db.rollback()
+        raise
+
+
+@router.post(
+    "/verify",
+    response_model=PublicDonationPaymentVerifyResponse,
+)
+def verify_public_donation_payment(
+    payload: PublicDonationPaymentVerifyRequest,
+    current_user: User | None = Depends(
+        get_optional_current_user
+    ),
+    db: Session = Depends(get_db),
+):
+    """
+    Verify a Razorpay donation payment.
+
+    Signature verification is authoritative, so guests
+    can complete payment without an account.
+
+    When authenticated, the donation may optionally be
+    associated with the user's Devotee account.
+    """
+
+    payment = db.scalar(
+        select(Payment)
+        .where(
+            Payment.gateway_order_id
+            == payload.razorpay_order_id,
+            Payment.gateway == "RAZORPAY",
+            Payment.donation_id.is_not(None),
+        )
+        .with_for_update()
+    )
+
+    if not payment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Donation payment order not found.",
+        )
+
+    donation = db.scalar(
+        select(Donation)
+        .where(
+            Donation.id == payment.donation_id,
+        )
+        .with_for_update()
+    )
+
+    if not donation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Donation not found.",
+        )
+
+    if payment.temple_id != donation.temple_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Payment and donation temple mismatch.",
+        )
+
+    if (
+        current_user is not None
+        and current_user.temple_id == donation.temple_id
+        and donation.devotee_id is None
+    ):
+        devotee = get_current_devotee(
+            current_user=current_user,
+            db=db,
+        )
+
+        if devotee:
+            donation.devotee_id = devotee.id
+
+    if payment.status == "SUCCESS":
+        if donation.status != "COMPLETED":
+            donation.status = "COMPLETED"
+
+        db.commit()
+
+        return PublicDonationPaymentVerifyResponse(
+            donation_id=donation.id,
+            donation_number=donation.donation_number,
+            payment_id=payment.id,
+            transaction_id=payment.transaction_id,
+            razorpay_order_id=payment.gateway_order_id,
+            razorpay_payment_id=(
+                payment.gateway_transaction_id
+                or payload.razorpay_payment_id
+            ),
+            amount=payment.amount,
+            currency=payment.currency,
+            payment_status=payment.status,
+            donation_status=donation.status,
+        )
+
+    if payment.status != "PENDING":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"Payment cannot be verified in "
+                f"status {payment.status}."
+            ),
+        )
+
+    try:
+        razorpay_service.verify_payment_signature(
+            razorpay_order_id=(
+                payload.razorpay_order_id
+            ),
+            razorpay_payment_id=(
+                payload.razorpay_payment_id
+            ),
+            razorpay_signature=(
+                payload.razorpay_signature
+            ),
+        )
+    except Exception as exc:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "Razorpay payment signature "
+                "verification failed."
+            ),
+        ) from exc
+
+    now = datetime.now(timezone.utc)
+
+    payment.status = "SUCCESS"
+
+    payment.gateway_transaction_id = (
+        payload.razorpay_payment_id
+    )
+
+    payment.paid_at = now
+    payment.failure_reason = None
+
+    donation.status = "COMPLETED"
+    donation.donated_at = now
+
+    db.commit()
+
+    return PublicDonationPaymentVerifyResponse(
+        donation_id=donation.id,
+        donation_number=donation.donation_number,
+        payment_id=payment.id,
+        transaction_id=payment.transaction_id,
+        razorpay_order_id=payment.gateway_order_id,
+        razorpay_payment_id=(
+            payload.razorpay_payment_id
+        ),
+        amount=payment.amount,
+        currency=payment.currency,
+        payment_status=payment.status,
+        donation_status=donation.status,
+    )

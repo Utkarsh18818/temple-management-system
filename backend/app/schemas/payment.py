@@ -64,6 +64,7 @@ class PaymentResponse(BaseModel):
     booking_id: uuid.UUID | None
 
     transaction_id: str
+    gateway_order_id: str | None
 
     amount: Decimal
     currency: str

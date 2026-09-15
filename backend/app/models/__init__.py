@@ -6,6 +6,7 @@ from app.models.seva import Seva
 from app.models.booking import SevaSlot, SevaBooking
 from app.models.donation import Donation
 from app.models.payment import Payment
+from app.models.payment_webhook import PaymentWebhookEvent
 from app.models.receipt import Receipt
 from app.models.festival import Festival
 from app.models.event import Event
@@ -22,6 +23,7 @@ __all__ = [
     "SevaBooking",
     "Donation",
     "Payment",
+    "PaymentWebhookEvent",
     "Receipt",
     "Festival",
     "Event",
