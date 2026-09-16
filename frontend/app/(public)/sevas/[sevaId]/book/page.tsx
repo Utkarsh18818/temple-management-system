@@ -1,11 +1,11 @@
 "use client";
-
+import { Suspense } from "react";
 import { useEffect } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 
 import { getPublicSeva } from "@/features/public/api";
 
-export default function LegacySevaBookingPage() {
+function LegacySevaBookingPage() {
   const router = useRouter();
   const params = useParams<{ sevaId: string }>();
   const searchParams = useSearchParams();
@@ -59,5 +59,18 @@ export default function LegacySevaBookingPage() {
         </div>
       </div>
     </main>
+  );
+}
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="text-sm text-stone-500">Loading...</div>
+        </div>
+      }
+    >
+      <LegacySevaBookingPage />
+    </Suspense>
   );
 }

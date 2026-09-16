@@ -1,5 +1,5 @@
 "use client";
-
+import { Suspense } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -176,7 +176,7 @@ type PaymentReconcileResponse = {
   reconciled: boolean;
 };
 
-export default function BookingConfirmationPage() {
+function BookingConfirmationPage() {
   const params = useParams<{
     templeId: string;
     sevaId: string;
@@ -1053,4 +1053,16 @@ export default function BookingConfirmationPage() {
     </div>
   );
 }
-
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="text-sm text-stone-500">Loading...</div>
+        </div>
+      }
+    >
+      <BookingConfirmationPage />
+    </Suspense>
+  );
+}

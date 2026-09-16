@@ -16,8 +16,16 @@ import {
   RefreshCw,
   Sparkles,
   Users,
+  WalletCards,
+  ReceiptText,
+  ShieldCheck,
+  Building2,
+  ListChecks,
+  PartyPopper,
   X,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "@/lib/auth/auth-context";
@@ -149,31 +157,73 @@ function Sidebar({
   onClose: () => void;
   onLogout: () => void;
 }) {
+  const pathname = usePathname();
+
   const navigation = [
     {
       label: "Dashboard",
+      href: "/admin/dashboard",
       icon: LayoutDashboard,
-      active: true,
+    },
+    {
+      label: "Temples",
+      href: "/admin/temples",
+      icon: Building2,
     },
     {
       label: "Devotees",
+      href: "/admin/devotees",
       icon: Users,
     },
     {
+      label: "Users",
+      href: "/admin/users",
+      icon: ShieldCheck,
+    },
+    {
       label: "Sevas",
+      href: "/admin/sevas",
       icon: Sparkles,
     },
     {
+      label: "Slots",
+      href: "/admin/slots",
+      icon: ListChecks,
+    },
+    {
       label: "Bookings",
+      href: "/admin/bookings",
       icon: CalendarDays,
     },
     {
       label: "Donations",
+      href: "/admin/donations",
       icon: CircleDollarSign,
     },
     {
+      label: "Payments",
+      href: "/admin/payments",
+      icon: WalletCards,
+    },
+    {
+      label: "Receipts",
+      href: "/admin/receipts",
+      icon: ReceiptText,
+    },
+    {
       label: "Events",
+      href: "/admin/events",
       icon: Flower2,
+    },
+    {
+      label: "Festivals",
+      href: "/admin/festivals",
+      icon: PartyPopper,
+    },
+    {
+      label: "Audit Logs",
+      href: "/admin/audit",
+      icon: Activity,
     },
   ];
 
@@ -214,7 +264,7 @@ function Sidebar({
           </button>
         </div>
 
-        <div className="px-4 py-6">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6">
           <p className="px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white/35">
             Temple workspace
           </p>
@@ -222,14 +272,19 @@ function Sidebar({
           <nav className="mt-3 space-y-1">
             {navigation.map((item) => {
               const Icon = item.icon;
+              const active =
+                item.href === "/admin/dashboard"
+                  ? pathname === item.href
+                  : pathname === item.href ||
+                    pathname.startsWith(`${item.href}/`);
 
               return (
-                <button
+                <Link
                   key={item.label}
-                  type="button"
+                  href={item.href}
                   onClick={onClose}
                   className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm transition ${
-                    item.active
+                    active
                       ? "bg-white text-[var(--krishna-blue)] shadow-sm"
                       : "text-white/65 hover:bg-white/8 hover:text-white"
                   }`}
@@ -237,10 +292,10 @@ function Sidebar({
                   <Icon size={18} strokeWidth={1.8} />
                   <span>{item.label}</span>
 
-                  {item.active && (
+                  {active && (
                     <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[var(--antique-gold)]" />
                   )}
-                </button>
+                </Link>
               );
             })}
           </nav>
@@ -946,3 +1001,5 @@ function TempleLoadingState() {
     </section>
   );
 }
+
+

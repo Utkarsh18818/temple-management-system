@@ -1,5 +1,5 @@
 "use client";
-
+import { Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
@@ -8,7 +8,7 @@ import { Eye, EyeOff, Loader2, LogIn, Mail, Lock } from "lucide-react";
 import { ApiError } from "@/lib/api/client";
 import { usePublicAuth } from "@/features/public/PublicAuthContext";
 
-export default function PublicLoginPage() {
+function PublicLoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = usePublicAuth();
@@ -121,6 +121,7 @@ export default function PublicLoginPage() {
             )}
 
             <form
+              autoComplete="off"
               onSubmit={handleSubmit}
               className="space-y-5"
             >
@@ -141,7 +142,7 @@ export default function PublicLoginPage() {
                   <input
                     id="username"
                     type="text"
-                    autoComplete="username"
+                    autoComplete="off"
                     value={username}
                     onChange={(event) =>
                       setUsername(event.target.value)
@@ -174,7 +175,7 @@ export default function PublicLoginPage() {
                         ? "text"
                         : "password"
                     }
-                    autoComplete="current-password"
+                    autoComplete="new-password"
                     value={password}
                     onChange={(event) =>
                       setPassword(event.target.value)
@@ -252,3 +253,17 @@ export default function PublicLoginPage() {
     </div>
   );
 }
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="text-sm text-stone-500">Loading...</div>
+        </div>
+      }
+    >
+      <PublicLoginPage />
+    </Suspense>
+  );
+}
+

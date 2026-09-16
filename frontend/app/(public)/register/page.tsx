@@ -1,5 +1,5 @@
 "use client";
-
+import { Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -26,7 +26,7 @@ import type {
   PublicDevoteeRegisterRequest,
 } from "@/features/public/auth";
 
-export default function PublicRegisterPage() {
+function PublicRegisterPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -396,10 +396,14 @@ export default function PublicRegisterPage() {
                           id="phone"
                           type="tel"
                           value={phone}
-                          onChange={(event) =>
-                            setPhone(event.target.value)
-                          }
-                          placeholder="+91 98765 43210"
+                          onChange={(event) => {
+                            const value = event.target.value.replace(/\D/g, "").slice(0, 10);
+                            setPhone(value);
+                          }}
+                          placeholder="98765 43210"
+                          maxLength={10}
+                          inputMode="numeric"
+                          pattern="[6-9][0-9]{9}"
                           autoComplete="tel"
                           disabled={isSubmitting}
                           className="w-full rounded-xl border border-stone-300 py-3 pl-10 pr-4 text-sm outline-none focus:border-stone-700 focus:ring-2 focus:ring-stone-200"
@@ -686,3 +690,17 @@ export default function PublicRegisterPage() {
     </div>
   );
 }
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="text-sm text-stone-500">Loading...</div>
+        </div>
+      }
+    >
+      <PublicRegisterPage />
+    </Suspense>
+  );
+}
+
