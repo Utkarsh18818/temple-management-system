@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
+from pathlib import Path
 from typing import Any
 
 from fastapi import (
@@ -11,6 +12,7 @@ from fastapi import (
     Request,
     status,
 )
+from fastapi.responses import FileResponse
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -106,8 +108,7 @@ def verify_receipt_access(
 
     if (
         current_user.temple_id is not None
-        and receipt.temple_id
-        != current_user.temple_id
+        and receipt.temple_id != current_user.temple_id
     ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -134,6 +135,60 @@ def get_receipt_or_404(
         )
 
     return receipt
+
+
+def resolve_receipt_pdf_path(
+    pdf_path: str,
+) -> Path:
+    """
+    Resolve a stored receipt PDF path safely.
+
+    Receipt PDFs are expected to live under:
+        backend/storage/receipts
+
+    The resolved path is validated so a database value
+    cannot escape the receipt storage directory.
+    """
+
+    backend_root = Path(__file__).resolve().parents[3]
+    receipts_root = (
+        backend_root
+        / "storage"
+        / "receipts"
+    ).resolve()
+
+    stored_path = Path(pdf_path)
+
+    if stored_path.is_absolute():
+        candidate = stored_path.resolve()
+    else:
+        candidate = (
+            backend_root / stored_path
+        ).resolve()
+
+    try:
+        candidate.relative_to(
+            receipts_root
+        )
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid receipt PDF path.",
+        )
+
+    if not candidate.is_file():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Receipt PDF file not found.",
+        )
+
+    if candidate.suffix.lower() != ".pdf":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid receipt PDF file.",
+        )
+
+    return candidate
 
 
 def generate_receipt_number(
@@ -554,3 +609,55 @@ def get_receipt(
     )
 
     return receipt
+
+
+# ============================================================
+# VIEW RECEIPT PDF
+# ============================================================
+
+@router.get(
+    "/{receipt_id}/pdf",
+)
+def view_receipt_pdf(
+    receipt_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Return the generated receipt PDF.
+
+    Access is protected by the same temple-level receipt
+    authorization used by the receipt detail endpoint.
+    """
+
+    receipt = get_receipt_or_404(
+        receipt_id,
+        db,
+    )
+
+    verify_receipt_access(
+        receipt,
+        current_user,
+    )
+
+    if not receipt.pdf_path:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Receipt PDF is not available.",
+        )
+
+    pdf_path = resolve_receipt_pdf_path(
+        receipt.pdf_path
+    )
+
+    return FileResponse(
+        path=pdf_path,
+        media_type="application/pdf",
+        filename=f"{receipt.receipt_number}.pdf",
+        headers={
+            "Content-Disposition": (
+                f'inline; filename="{receipt.receipt_number}.pdf"'
+            ),
+            "Cache-Control": "private, no-store",
+        },
+    )

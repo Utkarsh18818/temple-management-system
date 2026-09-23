@@ -11,12 +11,10 @@ export default function PublicLayout({
 }) {
   return (
     <PublicAuthProvider>
-      <div className="min-h-screen bg-stone-50 text-stone-900">
+      <div className="min-h-screen bg-[#fbf7ef] text-[#332a25]">
         <PublicNavbar />
 
-        <main>
-          {children}
-        </main>
+        <main>{children}</main>
 
         <PublicFooter />
       </div>

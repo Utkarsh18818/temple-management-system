@@ -5,10 +5,10 @@ import { useParams } from "next/navigation";
 import {
   ArrowRight,
   CalendarDays,
-  Clock,
-  Globe,
+  ChevronRight,
+  Clock3,
+  ExternalLink,
   Heart,
-  Mail,
   MapPin,
   Phone,
   Sparkles,
@@ -21,9 +21,46 @@ import {
   usePublicTemple,
 } from "@/features/public/hooks";
 
+function formatDate(value: string) {
+  const date = new Date(`${value}T00:00:00`);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+}
+
+function formatTime(value: string) {
+  const parts = value.split(":");
+
+  if (parts.length < 2) {
+    return value;
+  }
+
+  const hours = Number(parts[0]);
+  const minutes = Number(parts[1]);
+
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return value;
+  }
+
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+
+  return new Intl.DateTimeFormat("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
 export default function TempleDetailPage() {
-  const params = useParams();
-  const templeId = params.templeId as string;
+  const params = useParams<{ templeId: string }>();
+  const templeId = params?.templeId;
 
   const {
     data: temple,
@@ -35,400 +72,594 @@ export default function TempleDetailPage() {
     data: sevas,
     isLoading: sevasLoading,
   } = usePublicSevas({
-    templeId,
+    templeId: templeId ?? "",
+    limit: 6,
   });
 
   const {
     data: events,
     isLoading: eventsLoading,
   } = usePublicEvents({
-    templeId,
+    templeId: templeId ?? "",
+    limit: 4,
   });
 
   const {
     data: festivals,
     isLoading: festivalsLoading,
   } = usePublicFestivals({
-    templeId,
+    templeId: templeId ?? "",
+    limit: 4,
   });
 
   if (templeLoading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="animate-pulse">
-          <div className="h-72 rounded-3xl bg-stone-200" />
-          <div className="mt-10 h-10 w-1/2 rounded bg-stone-200" />
-          <div className="mt-4 h-5 w-2/3 rounded bg-stone-100" />
-        </div>
+      <div className="min-h-screen bg-[#fbf7ef]">
+        <section className="bg-[#102a43]">
+          <div className="temple-container py-24">
+            <div className="h-4 w-32 animate-pulse rounded bg-white/20" />
+            <div className="mt-6 h-14 max-w-2xl animate-pulse rounded bg-white/10" />
+            <div className="mt-5 h-5 max-w-xl animate-pulse rounded bg-white/10" />
+          </div>
+        </section>
+
+        <section className="temple-section">
+          <div className="temple-container">
+            <div className="grid gap-7 lg:grid-cols-3">
+              <div className="h-72 animate-pulse rounded-3xl bg-[#eee6da] lg:col-span-2" />
+              <div className="h-72 animate-pulse rounded-3xl bg-[#eee6da]" />
+            </div>
+          </div>
+        </section>
       </div>
     );
   }
 
   if (templeError || !temple) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-24 text-center sm:px-6">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-600">
-          <MapPin className="h-7 w-7" />
-        </div>
+      <div className="min-h-screen bg-[#fbf7ef]">
+        <section className="temple-section">
+          <div className="temple-container py-24 text-center">
+            <Sparkles className="mx-auto h-10 w-10 text-[#b76e79]" />
 
-        <h1 className="mt-6 font-display text-4xl font-semibold text-stone-900">
-          Temple not found
-        </h1>
+            <h1 className="temple-heading mt-6 text-3xl text-[#332a25]">
+              Temple not found
+            </h1>
 
-        <p className="mt-3 text-sm leading-7 text-stone-500">
-          This temple may no longer be available or the
-          requested temple could not be loaded.
-        </p>
+            <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-[#776b63]">
+              We could not load this temple right now. Please return to the
+              temple directory and try again.
+            </p>
 
-        <Link
-          href="/temples"
-          className="mt-7 inline-flex items-center gap-2 rounded-full bg-amber-600 px-6 py-3 text-sm font-semibold text-white hover:bg-amber-700"
-        >
-          Browse Temples
-          <ArrowRight className="h-4 w-4" />
-        </Link>
+            <Link
+              href="/temples"
+              className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#102a43] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#183b5c]"
+            >
+              Explore temples
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </section>
       </div>
     );
   }
 
-  return (
-    <div>
-      {/* Temple Hero */}
-      <section className="relative overflow-hidden bg-stone-950">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(217,119,6,0.25),transparent_35%),radial-gradient(circle_at_80%_80%,rgba(180,83,9,0.18),transparent_40%)]" />
+  const location = [
+    temple.city,
+    temple.state,
+    temple.country,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
-        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-          <div className="grid items-center gap-12 lg:grid-cols-[1.2fr_0.8fr]">
+  const address = [
+    temple.address,
+    temple.city,
+    temple.state,
+    temple.pincode,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  return (
+    <div className="min-h-screen bg-[#fbf7ef]">
+      <section className="relative overflow-hidden bg-[#102a43] text-white">
+        <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(circle_at_center,rgba(212,175,55,0.25)_1px,transparent_1px)] [background-size:26px_26px]" />
+
+        <div className="absolute -left-28 top-10 h-72 w-72 rounded-full bg-[#d4af37]/10 blur-3xl" />
+        <div className="absolute -right-28 bottom-0 h-80 w-80 rounded-full bg-[#b76e79]/10 blur-3xl" />
+
+        <div className="temple-container relative py-14 sm:py-20 lg:py-24">
+          <Link
+            href="/temples"
+            className="inline-flex items-center gap-2 text-sm text-white/60 transition hover:text-[#e7c873]"
+          >
+            <span>Temples</span>
+            <ChevronRight className="h-4 w-4" />
+            <span className="text-white/80">{temple.name}</span>
+          </Link>
+
+          <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_360px] lg:items-end">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
+              <div className="temple-eyebrow text-[#e7c873]">
                 <Sparkles className="h-4 w-4" />
-                Temple
+                Sacred destination
               </div>
 
-              <h1 className="mt-6 max-w-4xl font-display text-5xl font-semibold leading-tight text-white sm:text-6xl lg:text-7xl">
+              <h1 className="temple-heading mt-6 max-w-4xl text-5xl text-white sm:text-6xl lg:text-7xl">
                 {temple.name}
               </h1>
 
               {temple.description && (
-                <p className="mt-6 max-w-2xl text-base leading-8 text-stone-300 sm:text-lg">
+                <p className="mt-6 max-w-3xl text-base leading-8 text-white/75 sm:text-lg">
                   {temple.description}
                 </p>
               )}
 
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  href={`/temples/${temple.id}/sevas`}
-                  className="inline-flex h-12 items-center gap-2 rounded-full bg-amber-600 px-7 text-sm font-semibold text-white transition hover:bg-amber-500"
-                >
-                  <Heart className="h-4 w-4" />
-                  Explore Sevas
-                </Link>
-
-                <Link
-                  href="/events"
-                  className="inline-flex h-12 items-center gap-2 rounded-full border border-stone-600 px-7 text-sm font-semibold text-white transition hover:border-amber-400 hover:text-amber-300"
-                >
-                  <CalendarDays className="h-4 w-4" />
-                  Events
-                </Link>
-              </div>
+              {location && (
+                <div className="mt-7 flex items-center gap-3 text-sm text-white/70">
+                  <MapPin className="h-5 w-5 text-[#e7c873]" />
+                  <span>{location}</span>
+                </div>
+              )}
             </div>
 
-            <div className="hidden lg:block">
-              <div className="relative mx-auto flex aspect-square max-w-sm items-center justify-center rounded-full border border-amber-500/20 bg-gradient-to-br from-amber-500/20 to-transparent">
-                <div className="flex h-56 w-56 items-center justify-center rounded-full border border-amber-400/30 bg-amber-500/10">
-                  <span className="font-display text-[9rem] leading-none text-amber-400/80">
-                    ॐ
-                  </span>
+            <div className="relative flex min-h-64 items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur">
+              <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(circle_at_center,rgba(212,175,55,0.35)_1px,transparent_1px)] [background-size:20px_20px]" />
+
+              <div className="absolute h-48 w-48 rounded-full border border-[#d4af37]/30" />
+              <div className="absolute h-36 w-36 rounded-full border border-[#d4af37]/25" />
+
+              <div className="relative flex h-28 w-28 items-center justify-center rounded-full border border-[#d4af37]/60 bg-[#fbf7ef]/10 shadow-2xl">
+                <span className="font-serif text-6xl text-[#e7c873]">
+                  ॐ
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-[#e7dfd4] bg-white">
+        <div className="temple-container">
+          <div className="grid divide-y divide-[#e7dfd4] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+            <Link
+              href={`/temples/${temple.id}/sevas`}
+              className="group flex items-center justify-between px-2 py-6 sm:px-7"
+            >
+              <div className="flex items-center gap-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#fbf4df] text-[#9a6b1f]">
+                  <Heart className="h-5 w-5" />
+                </div>
+
+                <div>
+                  <p className="font-semibold text-[#332a25]">
+                    Explore Sevas
+                  </p>
+                  <p className="mt-1 text-xs text-[#8b8077]">
+                    Discover devotional services
+                  </p>
                 </div>
               </div>
-            </div>
+
+              <ArrowRight className="h-4 w-4 text-[#aaa097] transition group-hover:translate-x-1 group-hover:text-[#9a6b1f]" />
+            </Link>
+
+            <a
+              href="#events"
+              className="group flex items-center justify-between px-2 py-6 sm:px-7"
+            >
+              <div className="flex items-center gap-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f8e9ec] text-[#a85e69]">
+                  <CalendarDays className="h-5 w-5" />
+                </div>
+
+                <div>
+                  <p className="font-semibold text-[#332a25]">
+                    Events & Festivals
+                  </p>
+                  <p className="mt-1 text-xs text-[#8b8077]">
+                    See upcoming temple activities
+                  </p>
+                </div>
+              </div>
+
+              <ArrowRight className="h-4 w-4 text-[#aaa097] transition group-hover:translate-x-1 group-hover:text-[#9a6b1f]" />
+            </a>
+
+            <a
+              href="#visit"
+              className="group flex items-center justify-between px-2 py-6 sm:px-7"
+            >
+              <div className="flex items-center gap-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#e8f0ec] text-[#46715b]">
+                  <MapPin className="h-5 w-5" />
+                </div>
+
+                <div>
+                  <p className="font-semibold text-[#332a25]">
+                    Plan Your Visit
+                  </p>
+                  <p className="mt-1 text-xs text-[#8b8077]">
+                    Temple contact and location
+                  </p>
+                </div>
+              </div>
+
+              <ArrowRight className="h-4 w-4 text-[#aaa097] transition group-hover:translate-x-1 group-hover:text-[#9a6b1f]" />
+            </a>
           </div>
         </div>
       </section>
 
-      {/* Temple Information */}
-      <section className="border-b border-stone-200 bg-white">
-        <div className="mx-auto grid max-w-7xl gap-0 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="border-b border-stone-200 p-6 sm:border-r lg:border-b-0">
-            <MapPin className="h-5 w-5 text-amber-600" />
-
-            <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-stone-400">
-              Location
-            </p>
-
-            <p className="mt-2 text-sm leading-6 text-stone-700">
-              {[
-                temple.address,
-                temple.city,
-                temple.state,
-                temple.country,
-                temple.pincode,
-              ]
-                .filter(Boolean)
-                .join(", ") || "Location unavailable"}
-            </p>
-          </div>
-
-          <div className="border-b border-stone-200 p-6 lg:border-b-0 lg:border-r">
-            <Phone className="h-5 w-5 text-amber-600" />
-
-            <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-stone-400">
-              Phone
-            </p>
-
-            <p className="mt-2 text-sm text-stone-700">
-              {temple.phone || "Not available"}
-            </p>
-          </div>
-
-          <div className="border-b border-stone-200 p-6 sm:border-r lg:border-b-0">
-            <Mail className="h-5 w-5 text-amber-600" />
-
-            <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-stone-400">
-              Email
-            </p>
-
-            <p className="mt-2 break-all text-sm text-stone-700">
-              {temple.email || "Not available"}
-            </p>
-          </div>
-
-          <div className="p-6">
-            <Globe className="h-5 w-5 text-amber-600" />
-
-            <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-stone-400">
-              Website
-            </p>
-
-            {temple.website ? (
-              <a
-                href={temple.website}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-2 block break-all text-sm font-medium text-amber-700 hover:text-amber-800"
-              >
-                Visit website
-              </a>
-            ) : (
-              <p className="mt-2 text-sm text-stone-700">
-                Not available
-              </p>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Sevas */}
-      <section className="bg-stone-50 px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex items-end justify-between gap-5">
+      <section className="temple-section">
+        <div className="temple-container">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700">
-                Sacred offerings
+              <p className="temple-eyebrow text-[#9a6b1f]">
+                Devotional services
               </p>
 
-              <h2 className="mt-2 font-display text-4xl font-semibold text-stone-900">
-                Sevas
+              <h2 className="temple-heading mt-2 text-3xl text-[#332a25] sm:text-4xl">
+                Sevas at this temple
               </h2>
+
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-[#776b63]">
+                Participate in the devotional services currently offered by
+                this temple.
+              </p>
             </div>
 
             <Link
               href={`/temples/${temple.id}/sevas`}
-              className="hidden items-center gap-2 text-sm font-semibold text-amber-700 sm:inline-flex"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#8a5a16]"
             >
-              View all
+              View all sevas
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
           {sevasLoading ? (
-            <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 3 }).map((_, index) => (
                 <div
                   key={index}
-                  className="h-48 animate-pulse rounded-2xl bg-stone-200"
+                  className="h-64 animate-pulse rounded-3xl bg-[#eee6da]"
                 />
               ))}
             </div>
           ) : sevas && sevas.length > 0 ? (
-            <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {sevas.slice(0, 6).map((seva) => (
+            <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {sevas.map((seva) => (
                 <Link
                   key={seva.id}
-                  href={`/sevas/${seva.id}`}
-                  className="group rounded-2xl border border-stone-200 bg-white p-6 transition hover:-translate-y-1 hover:border-amber-300 hover:shadow-lg"
+                  href={`/temples/${temple.id}/sevas/${seva.id}/book`}
+                  className="group rounded-3xl border border-[#e7dfd4] bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:border-[#d4af37]/60 hover:shadow-xl hover:shadow-[#6b5848]/10"
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-100 text-amber-700">
-                      <Heart className="h-5 w-5" />
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#fbf4df] font-serif text-xl text-[#9a6b1f]">
+                      ॐ
                     </div>
 
-                    <ArrowRight className="h-5 w-5 text-stone-300 transition group-hover:translate-x-1 group-hover:text-amber-600" />
+                    <span className="rounded-full bg-[#f4ede2] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#8a7665]">
+                      {seva.seva_type}
+                    </span>
                   </div>
 
-                  <h3 className="mt-5 font-display text-2xl font-semibold text-stone-900 group-hover:text-amber-700">
+                  <h3 className="mt-6 font-serif text-2xl font-semibold text-[#332a25] transition group-hover:text-[#8a5a16]">
                     {seva.name}
                   </h3>
 
                   {seva.description && (
-                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-stone-500">
+                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#776b63]">
                       {seva.description}
                     </p>
                   )}
 
-                  <div className="mt-5 flex items-center justify-between border-t border-stone-100 pt-4">
-                    <span className="text-sm font-semibold text-amber-700">
+                  <div className="mt-6 flex items-center justify-between border-t border-[#eee7de] pt-5">
+                    <span className="font-semibold text-[#8a5a16]">
                       ₹{Number(seva.amount).toLocaleString("en-IN")}
                     </span>
 
-                    {seva.duration_minutes && (
-                      <span className="flex items-center gap-1 text-xs text-stone-400">
-                        <Clock className="h-3.5 w-3.5" />
-                        {seva.duration_minutes} min
-                      </span>
-                    )}
+                    <span className="flex items-center gap-1 text-xs font-semibold text-[#8a5a16]">
+                      Book
+                      <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" />
+                    </span>
                   </div>
                 </Link>
               ))}
             </div>
           ) : (
-            <div className="mt-8 rounded-2xl border border-dashed border-stone-300 bg-white p-10 text-center text-sm text-stone-500">
-              No online sevas are currently available.
+            <div className="mt-10 rounded-3xl border border-dashed border-[#d9cec0] bg-white px-6 py-14 text-center">
+              <Heart className="mx-auto h-8 w-8 text-[#c5b49f]" />
+              <p className="mt-4 text-sm text-[#776b63]">
+                No sevas are currently available at this temple.
+              </p>
             </div>
           )}
-
-          <Link
-            href={`/temples/${temple.id}/sevas`}
-            className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-amber-700 sm:hidden"
-          >
-            View all sevas
-            <ArrowRight className="h-4 w-4" />
-          </Link>
         </div>
       </section>
 
-      {/* Events */}
-      <section className="bg-white px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex items-end justify-between gap-5">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700">
-                Stay connected
-              </p>
+      <section
+        id="events"
+        className="border-y border-[#e7dfd4] bg-[#f4ede2]"
+      >
+        <div className="temple-container py-16 sm:py-20">
+          <div>
+            <p className="temple-eyebrow text-[#9a6b1f]">
+              Temple calendar
+            </p>
 
-              <h2 className="mt-2 font-display text-4xl font-semibold text-stone-900">
-                Upcoming Events
-              </h2>
-            </div>
+            <h2 className="temple-heading mt-2 text-3xl text-[#332a25] sm:text-4xl">
+              Events & festivals
+            </h2>
 
-            <Link
-              href="/events"
-              className="hidden items-center gap-2 text-sm font-semibold text-amber-700 sm:inline-flex"
-            >
-              All events
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-[#776b63]">
+              Stay connected with celebrations and activities published by
+              this temple.
+            </p>
           </div>
 
-          {eventsLoading ? (
-            <div className="mt-8 grid gap-5 md:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-44 animate-pulse rounded-2xl bg-stone-100"
-                />
-              ))}
-            </div>
-          ) : events && events.length > 0 ? (
-            <div className="mt-8 grid gap-5 md:grid-cols-3">
-              {events.slice(0, 3).map((event) => (
-                <div
-                  key={event.id}
-                  className="rounded-2xl border border-stone-200 bg-stone-50 p-6"
-                >
-                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-700">
-                    <CalendarDays className="h-4 w-4" />
-                    {event.event_date}
+          <div className="mt-10 grid gap-6 lg:grid-cols-2">
+            {eventsLoading || festivalsLoading ? (
+              <>
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="h-36 animate-pulse rounded-3xl bg-white"
+                  />
+                ))}
+              </>
+            ) : (
+              <>
+                {events?.map((event) => (
+                  <div
+                    key={event.id}
+                    className="rounded-3xl border border-[#e7dfd4] bg-white p-6 shadow-sm"
+                  >
+                    <div className="flex gap-5">
+                      <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-[#102a43] text-white">
+                        <CalendarDays className="h-5 w-5 text-[#e7c873]" />
+                        <span className="mt-1 text-[9px] font-bold uppercase tracking-wider">
+                          Event
+                        </span>
+                      </div>
+
+                      <div className="min-w-0">
+                        <h3 className="font-serif text-xl font-semibold text-[#332a25]">
+                          {event.name}
+                        </h3>
+
+                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs text-[#776b63]">
+                          <span>{formatDate(event.event_date)}</span>
+
+                          <span className="flex items-center gap-1">
+                            <Clock3 className="h-3.5 w-3.5" />
+                            {formatTime(event.start_time)}
+                            {event.end_time
+                              ? ` – ${formatTime(event.end_time)}`
+                              : ""}
+                          </span>
+
+                          {event.location && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3.5 w-3.5" />
+                              {event.location}
+                            </span>
+                          )}
+                        </div>
+
+                        {event.description && (
+                          <p className="mt-3 line-clamp-2 text-sm leading-6 text-[#776b63]">
+                            {event.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
+                ))}
 
-                  <h3 className="mt-4 font-display text-2xl font-semibold text-stone-900">
-                    {event.name}
-                  </h3>
+                {festivals?.map((festival) => (
+                  <div
+                    key={festival.id}
+                    className="rounded-3xl border border-[#e7dfd4] bg-white p-6 shadow-sm"
+                  >
+                    <div className="flex gap-5">
+                      <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-[#8a5a16] text-white">
+                        <Sparkles className="h-5 w-5 text-[#f7df93]" />
+                        <span className="mt-1 text-[9px] font-bold uppercase tracking-wider">
+                          Festival
+                        </span>
+                      </div>
 
-                  {event.location && (
-                    <p className="mt-3 flex items-center gap-2 text-sm text-stone-500">
-                      <MapPin className="h-4 w-4 text-amber-600" />
-                      {event.location}
-                    </p>
+                      <div className="min-w-0">
+                        <h3 className="font-serif text-xl font-semibold text-[#332a25]">
+                          {festival.name}
+                        </h3>
+
+                        <p className="mt-2 text-xs text-[#776b63]">
+                          {formatDate(festival.start_date)}
+                          {" – "}
+                          {formatDate(festival.end_date)}
+                        </p>
+
+                        {(festival.location || festival.deity) && (
+                          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs text-[#776b63]">
+                            {festival.location && (
+                              <span className="flex items-center gap-1">
+                                <MapPin className="h-3.5 w-3.5" />
+                                {festival.location}
+                              </span>
+                            )}
+
+                            {festival.deity && (
+                              <span>Deity: {festival.deity}</span>
+                            )}
+                          </div>
+                        )}
+
+                        {festival.description && (
+                          <p className="mt-3 line-clamp-2 text-sm leading-6 text-[#776b63]">
+                            {festival.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {(!events || events.length === 0) &&
+                  (!festivals || festivals.length === 0) && (
+                    <div className="rounded-3xl border border-dashed border-[#d9cec0] bg-white px-6 py-14 text-center lg:col-span-2">
+                      <CalendarDays className="mx-auto h-8 w-8 text-[#c5b49f]" />
+                      <p className="mt-4 text-sm text-[#776b63]">
+                        No upcoming events or festivals are currently
+                        published for this temple.
+                      </p>
+                    </div>
                   )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="mt-8 rounded-2xl border border-dashed border-stone-300 p-10 text-center text-sm text-stone-500">
-              No upcoming events currently available.
-            </div>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </section>
 
-      {/* Festivals */}
-      <section className="bg-amber-50 px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-        <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700">
-            Celebrate together
-          </p>
+      <section id="visit" className="temple-section">
+        <div className="temple-container">
+          <div className="grid gap-7 lg:grid-cols-[1.2fr_0.8fr]">
+            <div className="rounded-3xl bg-[#102a43] p-8 text-white sm:p-10">
+              <p className="temple-eyebrow text-[#e7c873]">
+                Plan your visit
+              </p>
 
-          <h2 className="mt-2 font-display text-4xl font-semibold text-stone-900">
-            Festivals
+              <h2 className="temple-heading mt-4 text-3xl text-white sm:text-4xl">
+                Come with devotion.
+                <span className="block text-[#e7c873]">
+                  Leave with memories.
+                </span>
+              </h2>
+
+              <p className="mt-5 max-w-xl text-sm leading-7 text-white/70">
+                Find the temple location and official contact information
+                before beginning your journey.
+              </p>
+
+              <div className="mt-8 space-y-5">
+                {address && (
+                  <div className="flex gap-4">
+                    <MapPin className="mt-1 h-5 w-5 shrink-0 text-[#e7c873]" />
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.15em] text-white/40">
+                        Address
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-white/80">
+                        {address}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {temple.phone && (
+                  <div className="flex gap-4">
+                    <Phone className="mt-1 h-5 w-5 shrink-0 text-[#e7c873]" />
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.15em] text-white/40">
+                        Phone
+                      </p>
+                      <a
+                        href={`tel:${temple.phone}`}
+                        className="mt-1 block text-sm text-white/80 transition hover:text-[#e7c873]"
+                      >
+                        {temple.phone}
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-[#e7dfd4] bg-white p-8 shadow-sm sm:p-10">
+              <p className="temple-eyebrow text-[#9a6b1f]">
+                Temple information
+              </p>
+
+              <div className="mt-7 space-y-5">
+                {temple.email && (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#a49a92]">
+                      Email
+                    </p>
+                    <a
+                      href={`mailto:${temple.email}`}
+                      className="mt-1 block break-all text-sm font-medium text-[#332a25] hover:text-[#8a5a16]"
+                    >
+                      {temple.email}
+                    </a>
+                  </div>
+                )}
+
+                {temple.website && (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#a49a92]">
+                      Website
+                    </p>
+                    <a
+                      href={temple.website}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-1 inline-flex items-center gap-2 text-sm font-medium text-[#8a5a16]"
+                    >
+                      Visit official website
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
+                )}
+
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#a49a92]">
+                    Temple code
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-[#332a25]">
+                    {temple.code}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#a49a92]">
+                    Timezone
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-[#332a25]">
+                    {temple.timezone}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-[#e7dfd4] bg-[#f4ede2]">
+        <div className="temple-container py-16 text-center sm:py-20">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#d4af37]/50 bg-[#fbf7ef]">
+            <Heart className="h-6 w-6 text-[#9a6b1f]" />
+          </div>
+
+          <h2 className="temple-heading mt-6 text-3xl text-[#332a25] sm:text-4xl">
+            Support the temple
           </h2>
 
-          {festivalsLoading ? (
-            <div className="mt-8 grid gap-5 md:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-40 animate-pulse rounded-2xl bg-amber-100"
-                />
-              ))}
-            </div>
-          ) : festivals && festivals.length > 0 ? (
-            <div className="mt-8 grid gap-5 md:grid-cols-3">
-              {festivals.slice(0, 3).map((festival) => (
-                <div
-                  key={festival.id}
-                  className="rounded-2xl border border-amber-200 bg-white p-6"
-                >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-700">
-                    <Sparkles className="h-5 w-5" />
-                  </div>
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[#776b63] sm:text-base">
+            Offer your contribution and become part of the temple&apos;s
+            journey of service.
+          </p>
 
-                  <h3 className="mt-5 font-display text-2xl font-semibold text-stone-900">
-                    {festival.name}
-                  </h3>
-
-                  <p className="mt-2 text-sm font-medium text-amber-700">
-                    {festival.start_date}
-
-                    {festival.end_date &&
-                      festival.end_date !== festival.start_date &&
-                      ` — ${festival.end_date}`}
-                  </p>
-
-                  {festival.deity && (
-                    <p className="mt-2 text-sm text-stone-500">
-                      {festival.deity}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="mt-8 rounded-2xl border border-dashed border-amber-200 bg-white p-10 text-center text-sm text-stone-500">
-              No upcoming festivals currently available.
-            </div>
-          )}
+          <Link
+            href={`/donate?temple_id=${temple.id}`}
+            className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#102a43] px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#102a43]/15 transition hover:bg-[#183b5c]"
+          >
+            Make a donation
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </section>
     </div>

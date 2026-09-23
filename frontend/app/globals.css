@@ -1,13 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  /* TempleOS — Radha-Krishna visual identity */
+  /* ============================================================
+     TempleOS — Sacred Modern Design System
+     ============================================================ */
+
   --krishna-blue: #183b63;
   --krishna-blue-deep: #102c4a;
+
   --radha-rose: #b85c73;
   --radha-rose-soft: #d98b9d;
+
   --peacock-green: #287c72;
+
   --antique-gold: #b08a45;
+  --antique-gold-light: #d1b06a;
+  --antique-gold-soft: #ead9ad;
 
   --ivory: #fbf7ef;
   --ivory-deep: #f3ecdf;
@@ -39,7 +47,10 @@
   --color-radha-soft: var(--radha-rose-soft);
 
   --color-peacock: var(--peacock-green);
+
   --color-gold: var(--antique-gold);
+  --color-gold-light: var(--antique-gold-light);
+  --color-gold-soft: var(--antique-gold-soft);
 
   --color-ivory: var(--ivory);
   --color-ivory-deep: var(--ivory-deep);
@@ -55,6 +66,10 @@
   --font-sans: var(--font-sans);
   --font-devanagari: var(--font-devanagari);
 }
+
+/* ============================================================
+   Base
+   ============================================================ */
 
 * {
   box-sizing: border-box;
@@ -72,7 +87,7 @@ body {
   background:
     radial-gradient(
       circle at 50% -20%,
-      rgba(176, 138, 69, 0.08),
+      rgba(176, 138, 69, 0.10),
       transparent 38%
     ),
     var(--background);
@@ -98,12 +113,14 @@ button {
   color: var(--earth-brown-deep);
 }
 
-/* English / Latin display typography */
+/* ============================================================
+   Typography
+   ============================================================ */
+
 .font-display {
   font-family: var(--font-display);
 }
 
-/* Indian-language typography */
 .font-devanagari,
 [lang="hi"],
 [lang="mr"],
@@ -111,7 +128,6 @@ button {
   font-family: var(--font-devanagari);
 }
 
-/* Keep UI controls readable when Indian scripts are active. */
 [lang="hi"] button,
 [lang="hi"] input,
 [lang="hi"] textarea,
@@ -127,13 +143,85 @@ button {
   font-family: var(--font-sans), var(--font-devanagari);
 }
 
-/* Accessible focus treatment */
+/* ============================================================
+   Reusable TempleOS utility classes
+   ============================================================ */
+
+.temple-section {
+  position: relative;
+}
+
+.temple-container {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 640px) {
+  .temple-container {
+    padding-inline: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .temple-container {
+    padding-inline: 2rem;
+  }
+}
+
+.temple-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--antique-gold);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.temple-eyebrow::before,
+.temple-eyebrow::after {
+  content: "";
+  display: block;
+  width: 1.5rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.65;
+}
+
+.temple-heading {
+  font-family: var(--font-display);
+  color: var(--earth-brown-deep);
+  letter-spacing: -0.025em;
+}
+
+.temple-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--antique-gold-soft),
+    transparent
+  );
+}
+
+/* ============================================================
+   Accessible focus treatment
+   ============================================================ */
+
 :focus-visible {
   outline: 3px solid rgba(40, 124, 114, 0.35);
   outline-offset: 3px;
 }
 
-/* Respect reduced-motion preferences. */
+/* ============================================================
+   Reduced motion
+   ============================================================ */
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
