@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
+import { TempleLink as Link } from "@/features/public/TempleContext";
+import { PublicPageHero } from "@/components/public/PublicPageHero";
 import { useParams } from "next/navigation";
 import {
   ArrowRight,
   CalendarDays,
-  ChevronRight,
   Clock3,
   ExternalLink,
   Heart,
@@ -95,7 +95,7 @@ export default function TempleDetailPage() {
   if (templeLoading) {
     return (
       <div className="min-h-screen bg-[#fbf7ef]">
-        <section className="bg-[#102a43]">
+        <section className="bg-[#762d36]">
           <div className="temple-container py-24">
             <div className="h-4 w-32 animate-pulse rounded bg-white/20" />
             <div className="mt-6 h-14 max-w-2xl animate-pulse rounded bg-white/10" />
@@ -133,7 +133,7 @@ export default function TempleDetailPage() {
 
             <Link
               href="/temples"
-              className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#102a43] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#183b5c]"
+              className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#762d36] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#5b242d]"
             >
               Explore temples
               <ArrowRight className="h-4 w-4" />
@@ -163,62 +163,7 @@ export default function TempleDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#fbf7ef]">
-      <section className="relative overflow-hidden bg-[#102a43] text-white">
-        <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(circle_at_center,rgba(212,175,55,0.25)_1px,transparent_1px)] [background-size:26px_26px]" />
-
-        <div className="absolute -left-28 top-10 h-72 w-72 rounded-full bg-[#d4af37]/10 blur-3xl" />
-        <div className="absolute -right-28 bottom-0 h-80 w-80 rounded-full bg-[#b76e79]/10 blur-3xl" />
-
-        <div className="temple-container relative py-14 sm:py-20 lg:py-24">
-          <Link
-            href="/temples"
-            className="inline-flex items-center gap-2 text-sm text-white/60 transition hover:text-[#e7c873]"
-          >
-            <span>Temples</span>
-            <ChevronRight className="h-4 w-4" />
-            <span className="text-white/80">{temple.name}</span>
-          </Link>
-
-          <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_360px] lg:items-end">
-            <div>
-              <div className="temple-eyebrow text-[#e7c873]">
-                <Sparkles className="h-4 w-4" />
-                Sacred destination
-              </div>
-
-              <h1 className="temple-heading mt-6 max-w-4xl text-5xl text-white sm:text-6xl lg:text-7xl">
-                {temple.name}
-              </h1>
-
-              {temple.description && (
-                <p className="mt-6 max-w-3xl text-base leading-8 text-white/75 sm:text-lg">
-                  {temple.description}
-                </p>
-              )}
-
-              {location && (
-                <div className="mt-7 flex items-center gap-3 text-sm text-white/70">
-                  <MapPin className="h-5 w-5 text-[#e7c873]" />
-                  <span>{location}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="relative flex min-h-64 items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur">
-              <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(circle_at_center,rgba(212,175,55,0.35)_1px,transparent_1px)] [background-size:20px_20px]" />
-
-              <div className="absolute h-48 w-48 rounded-full border border-[#d4af37]/30" />
-              <div className="absolute h-36 w-36 rounded-full border border-[#d4af37]/25" />
-
-              <div className="relative flex h-28 w-28 items-center justify-center rounded-full border border-[#d4af37]/60 bg-[#fbf7ef]/10 shadow-2xl">
-                <span className="font-serif text-6xl text-[#e7c873]">
-                  ॐ
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PublicPageHero eyebrow={location || "TEMPLE DIRECTORY"} title={temple.name} description={temple.description || "Discover worship, devotional services, and celebrations at this temple."} />
 
       <section className="border-b border-[#e7dfd4] bg-white">
         <div className="temple-container">
@@ -418,7 +363,7 @@ export default function TempleDetailPage() {
                     className="rounded-3xl border border-[#e7dfd4] bg-white p-6 shadow-sm"
                   >
                     <div className="flex gap-5">
-                      <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-[#102a43] text-white">
+                      <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-[#762d36] text-white">
                         <CalendarDays className="h-5 w-5 text-[#e7c873]" />
                         <span className="mt-1 text-[9px] font-bold uppercase tracking-wider">
                           Event
@@ -527,7 +472,7 @@ export default function TempleDetailPage() {
       <section id="visit" className="temple-section">
         <div className="temple-container">
           <div className="grid gap-7 lg:grid-cols-[1.2fr_0.8fr]">
-            <div className="rounded-3xl bg-[#102a43] p-8 text-white sm:p-10">
+            <div className="rounded-3xl bg-[#762d36] p-8 text-white sm:p-10">
               <p className="temple-eyebrow text-[#e7c873]">
                 Plan your visit
               </p>
@@ -655,7 +600,7 @@ export default function TempleDetailPage() {
 
           <Link
             href={`/donate?temple_id=${temple.id}`}
-            className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#102a43] px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#102a43]/15 transition hover:bg-[#183b5c]"
+            className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#762d36] px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#762d36]/15 transition hover:bg-[#5b242d]"
           >
             Make a donation
             <ArrowRight className="h-4 w-4" />

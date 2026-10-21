@@ -1,7 +1,11 @@
 "use client";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import { PaymentIncome, PaymentReceiptAction } from "@/components/admin/PaymentFeatures";
+import ReceiptManager from "@/components/admin/ReceiptManager";
+import { useAdminTemple } from "@/components/admin/AdminWorkspace";
 
 import {
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -248,17 +252,15 @@ function EmptyState({
   );
 }
 
-export default function PaymentsPage() {
+function TransactionsPanel() {
   const {
     user,
     isLoading: authLoading,
   } = useAuth();
 
-  const [mounted, setMounted] =
-    useState(false);
+  const mounted = !authLoading;
 
-  const [templeId, setTempleId] =
-    useState("");
+  const [templeId] = useAdminTemple();
 
   const [status, setStatus] =
     useState<StatusFilter>("");
@@ -281,41 +283,9 @@ export default function PaymentsPage() {
   const [showStatusModal, setShowStatusModal] =
     useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
-  useEffect(() => {
-    if (
-      user?.temple_id &&
-      !templeId
-    ) {
-      setTempleId(
-        String(user.temple_id),
-      );
-    }
-  }, [
-    user?.temple_id,
-    templeId,
-  ]);
 
-  const hasToken = useMemo(() => {
-    if (!mounted) {
-      return false;
-    }
-
-    return Boolean(
-      window.localStorage.getItem(
-        "templeos_access_token",
-      ) ||
-        window.sessionStorage.getItem(
-          "templeos_access_token",
-        ),
-    );
-  }, [mounted]);
-
-  const isSuperAdmin =
-    !user?.temple_id;
+  const hasToken = Boolean(user);
 
   const {
     data: payments = [],
@@ -536,24 +506,12 @@ export default function PaymentsPage() {
             </h1>
 
             <p className="mt-1 text-sm text-slate-500">
-              Track donation and seva
-              booking payment transactions.
+              Loaded transaction page. Income above covers the full selected period.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {isSuperAdmin && (
-              <input
-                value={templeId}
-                onChange={(event) =>
-                  setTempleId(
-                    event.target.value,
-                  )
-                }
-                placeholder="Temple ID"
-                className="h-10 w-72 rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              />
-            )}
+
 
             <button
               type="button"
@@ -594,7 +552,7 @@ export default function PaymentsPage() {
         {/* Metrics */}
         <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <MetricCard
-            label="Transactions"
+            label="Transactions loaded"
             value={String(
               metrics.count,
             )}
@@ -650,7 +608,7 @@ export default function PaymentsPage() {
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
-              <input
+              <input aria-label="Search transaction, gateway or ID…"
                 value={search}
                 onChange={(event) =>
                   setSearch(
@@ -662,7 +620,7 @@ export default function PaymentsPage() {
               />
             </div>
 
-            <select
+            <select aria-label="Status"
               value={status}
               onChange={(event) =>
                 setStatus(
@@ -690,7 +648,7 @@ export default function PaymentsPage() {
               )}
             </select>
 
-            <select
+            <select aria-label="Method"
               value={method}
               onChange={(event) =>
                 setMethod(
@@ -813,7 +771,7 @@ export default function PaymentsPage() {
                     <th className="px-5 py-3">
                       Paid At
                     </th>
-                    <th className="px-5 py-3" />
+                    <th scope="col" className="px-5 py-3">Receipt</th><th className="px-5 py-3" />
                   </tr>
                 </thead>
 
@@ -934,6 +892,7 @@ export default function PaymentsPage() {
                           )}
                         </td>
 
+                        <td className="px-5 py-4"><PaymentReceiptAction payment={payment}/></td>
                         <td className="px-5 py-4 text-right">
                           <button
                             type="button"
@@ -1241,7 +1200,7 @@ function CreatePaymentModal({
                 : "Seva Booking ID"}
             </label>
 
-            <input
+            <input aria-label="Enter UUID"
               value={sourceId}
               onChange={(event) =>
                 setSourceId(
@@ -1265,7 +1224,7 @@ function CreatePaymentModal({
                 Amount
               </label>
 
-              <input
+              <input aria-label="501.00"
                 type="number"
                 min="0.01"
                 step="0.01"
@@ -1285,7 +1244,7 @@ function CreatePaymentModal({
                 Currency
               </label>
 
-              <input
+              <input aria-label="Currency"
                 value={currency}
                 onChange={(event) =>
                   setCurrency(
@@ -1303,7 +1262,7 @@ function CreatePaymentModal({
               Payment method
             </label>
 
-            <select
+            <select aria-label="Method"
               value={method}
               onChange={(event) =>
                 setMethod(
@@ -1337,7 +1296,7 @@ function CreatePaymentModal({
                 </span>
               </label>
 
-              <input
+              <input aria-label="Razorpay / TEST"
                 value={gateway}
                 onChange={(event) =>
                   setGateway(
@@ -1358,7 +1317,7 @@ function CreatePaymentModal({
                 </span>
               </label>
 
-              <input
+              <input aria-label="Gateway transaction ID"
                 value={
                   gatewayTransactionId
                 }
@@ -1735,11 +1694,12 @@ function StatusUpdateModal({
           )}
 
           <div>
+            <p className="mb-3 text-xs leading-5 text-slate-600">Record only payments or refunds already completed. Changing this status does not transfer money through the gateway.</p>
             <label className="mb-2 block text-sm font-medium text-slate-700">
               Status
             </label>
 
-            <select
+            <select aria-label="Payment status"
               value={nextStatus}
               onChange={(event) =>
                 setNextStatus(
@@ -1773,7 +1733,7 @@ function StatusUpdateModal({
                 Failure reason
               </label>
 
-              <textarea
+              <textarea aria-label="Explain why the payment failed…"
                 value={
                   failureReason
                 }
@@ -1844,3 +1804,18 @@ function StatusUpdateModal({
   );
 }
 
+
+function PaymentWorkspace() {
+  const params = useSearchParams();
+  const router = useRouter();
+  const tab = params.get("tab") === "receipts" ? "receipts" : "transactions";
+  function changeTab(value: string) { router.replace(value === "receipts" ? "/admin/payments?tab=receipts" : "/admin/payments", {scroll:false}); }
+  return <div><PaymentIncome/><div className="mx-4 mt-6 flex gap-2 border-b border-[#dfd0c0] sm:mx-8" aria-label="Payment views">
+    <button aria-pressed={tab === "transactions"} onClick={()=>changeTab("transactions")} className={`rounded-t-lg px-5 py-3 text-sm font-semibold ${tab === "transactions" ? "bg-[#71333e] text-white" : "bg-white text-[#71333e]"}`}>Transactions</button>
+    <button aria-pressed={tab === "receipts"} onClick={()=>changeTab("receipts")} className={`rounded-t-lg px-5 py-3 text-sm font-semibold ${tab === "receipts" ? "bg-[#71333e] text-white" : "bg-white text-[#71333e]"}`}>Receipts</button>
+  </div>{tab === "receipts" ? <ReceiptManager/> : <TransactionsPanel/>}</div>;
+}
+
+export default function PaymentsPage() {
+  return <Suspense fallback={<p className="p-8" role="status">Opening payments…</p>}><PaymentWorkspace/></Suspense>;
+}

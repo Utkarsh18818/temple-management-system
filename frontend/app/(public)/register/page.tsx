@@ -1,6 +1,6 @@
 "use client";
 import { Suspense } from "react";
-import Link from "next/link";
+import { TempleLink as Link } from "@/features/public/TempleContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   FormEvent,
@@ -22,6 +22,8 @@ import {
 import { ApiError } from "@/lib/api/client";
 import { usePublicAuth } from "@/features/public/PublicAuthContext";
 import { usePublicTemples } from "@/features/public/hooks";
+import { isMandirTemple } from "@/config/mandir";
+import { useTemplePortal, portalReturnPath } from "@/features/public/TempleContext";
 import type {
   PublicDevoteeRegisterRequest,
 } from "@/features/public/auth";
@@ -34,6 +36,7 @@ function PublicRegisterPage() {
     searchParams.get("redirect") || "/";
 
   const { register } = usePublicAuth();
+  const portal = useTemplePortal();
 
   const {
     data: temples,
@@ -43,7 +46,14 @@ function PublicRegisterPage() {
     limit: 100,
   });
 
-  const [templeId, setTempleId] = useState("");
+  const templeId = portal.templeId;
+  function setTempleId(id:string) {
+    if(!id) return;
+    const temple = temples?.find(t=>t.id===id);
+    const home = temple && isMandirTemple(temple) ? "/" : `/temples/${id}`;
+    const redirect = portalReturnPath(redirectTo,id,home);
+    router.replace(`/register?temple_id=${id}&redirect=${encodeURIComponent(redirect)}`);
+  }
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -121,7 +131,7 @@ function PublicRegisterPage() {
 
     try {
       await register(payload);
-      router.replace(redirectTo);
+      router.replace(portalReturnPath(redirectTo,portal.templeId,portal.home));
     } catch (error) {
       if (error instanceof ApiError) {
         setError(error.message);
@@ -147,7 +157,7 @@ function PublicRegisterPage() {
               </div>
 
               <p className="mb-3 text-sm font-semibold uppercase tracking-[0.25em] text-amber-300">
-                TempleOS
+                {portal.temple?.name ?? "Temple portal"}
               </p>
 
               <h1 className="text-4xl font-semibold leading-tight">
@@ -177,7 +187,7 @@ function PublicRegisterPage() {
                 </div>
 
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">
-                  TempleOS
+                  {portal.temple?.name ?? "Temple portal"}
                 </p>
               </div>
 
@@ -187,7 +197,7 @@ function PublicRegisterPage() {
                 </h2>
 
                 <p className="mt-2 text-sm leading-6 text-stone-500">
-                  Join TempleOS as a devotee and manage
+                  Join {portal.temple?.name ?? "Temple portal"} as a devotee and manage
                   your temple activities from one place.
                 </p>
               </div>
@@ -703,4 +713,3 @@ export default function Page() {
     </Suspense>
   );
 }
-

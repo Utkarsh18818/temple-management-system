@@ -1,7 +1,9 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, Suspense, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PublicPageHero } from "@/components/public/PublicPageHero";
+import { useTemplePortal } from "@/features/public/TempleContext";
 import { Heart, Loader2, ShieldCheck } from "lucide-react";
 
 import {
@@ -46,11 +48,13 @@ function loadRazorpayScript(): Promise<boolean> {
 
 const QUICK_AMOUNTS = [101, 501, 1001, 5001];
 
-export default function DonatePage() {
+function DonateForm() {
   const router = useRouter();
+  const portal = useTemplePortal();
   const { data: temples, isLoading: templesLoading } = usePublicTemples();
 
-  const [templeId, setTempleId] = useState("");
+  const templeId = portal.templeId;
+  const setTempleId = (id:string) => { if(id) router.replace(`/donate?temple_id=${id}`); };
   const [amount, setAmount] = useState("101");
   const [donationType, setDonationType] = useState("GENERAL");
   const [purpose, setPurpose] = useState("");
@@ -69,11 +73,6 @@ export default function DonatePage() {
     [temples, templeId],
   );
 
-  useEffect(() => {
-    if (temples?.length && !templeId) {
-      setTempleId(temples[0].id);
-    }
-  }, [temples, templeId]);
 
   const handleQuickAmount = (value: number) => {
     setAmount(String(value));
@@ -212,22 +211,7 @@ export default function DonatePage() {
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-stone-50">
-      <section className="border-b border-stone-200 bg-gradient-to-b from-amber-50 to-stone-50">
-        <div className="mx-auto max-w-5xl px-6 py-14 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-amber-800">
-            <Heart className="h-7 w-7" />
-          </div>
-
-          <h1 className="font-serif text-4xl font-semibold text-stone-900">
-            Make a Donation
-          </h1>
-
-          <p className="mx-auto mt-4 max-w-2xl text-stone-600">
-            Your contribution helps support temple activities, seva, festivals,
-            maintenance, and community initiatives.
-          </p>
-        </div>
-      </section>
+      <PublicPageHero eyebrow="SEVA THROUGH GIVING" title="A grateful heart." accent="A meaningful offering." description="Choose the temple you wish to support and make your offering through our secure donation portal." />
 
       <section className="mx-auto max-w-3xl px-6 py-10">
         <form
@@ -501,4 +485,8 @@ export default function DonatePage() {
       </section>
     </div>
   );
+}
+
+export default function DonatePage() {
+  return <Suspense fallback={<p className="p-8" role="status">Opening donation form…</p>}><DonateForm/></Suspense>;
 }

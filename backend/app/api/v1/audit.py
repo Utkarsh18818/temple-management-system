@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_staff
 from app.models import AuditLog, User
 from app.schemas.audit import AuditLogResponse
 
@@ -54,7 +54,7 @@ def list_audit_logs(
         ge=0,
     ),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     """
     List audit logs.
@@ -142,7 +142,7 @@ def list_audit_logs(
 def get_audit_log(
     audit_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     """
     Get a single audit log.

@@ -129,6 +129,7 @@ def create_user(
     if duplicate_conditions:
         existing_user = db.scalar(
             select(User).where(
+                User.temple_id == request.temple_id,
                 or_(*duplicate_conditions)
             )
         )

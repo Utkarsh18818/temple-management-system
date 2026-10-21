@@ -31,6 +31,7 @@ class UserResponse(BaseModel):
     id: uuid.UUID
     temple_id: uuid.UUID | None
     role_id: uuid.UUID
+    role_name: str | None = None
 
     email: str | None
     phone: str | None

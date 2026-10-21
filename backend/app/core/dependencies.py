@@ -51,6 +51,9 @@ def get_current_user(
     if not user or not user.is_active:
         raise credentials_exception
 
+    role = db.get(Role, user.role_id)
+    user.role_name = role.name if role else None
+    db.info["audit_actor"] = user
     return user
 
 
@@ -121,6 +124,9 @@ def require_roles(*allowed_roles: str) -> Callable:
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Insufficient permissions",
             )
+
+        if role.name != "SUPER_ADMIN" and current_user.temple_id is None:
+            raise HTTPException(status_code=403, detail="A temple assignment is required")
 
         return current_user
 

@@ -1,151 +1,76 @@
-import Link from "next/link";
-import {
-  ArrowUpRight,
-  Heart,
-  Mail,
-  MapPin,
-  Phone,
-} from "lucide-react";
-
+"use client";
+import { TempleLink as Link } from "@/features/public/TempleContext";
+import { useTemplePortal } from "@/features/public/TempleContext";
+import { ArrowUpRight, MapPin } from "lucide-react";
+import { mandir } from "@/config/mandir";
+import { Lotus, MandirMark } from "./MandirMark";
 export function PublicFooter() {
+  const portal = useTemplePortal();
+  if(portal.temple && !portal.isPrimary) return <footer className="mandir-footer"><div className="mandir-container py-10"><h2 className="font-display text-3xl text-white">{portal.temple.name}</h2><p className="mt-3">{[portal.temple.address,portal.temple.city,portal.temple.state].filter(Boolean).join(", ")}</p><nav className="mt-6 flex flex-wrap gap-5" aria-label="Temple footer"><Link href={portal.home}>Temple home</Link><Link href="/login">Sign in</Link><Link href="/register">Register with this temple</Link><Link href="/account/bookings">My bookings</Link><Link href="/account/receipts">My receipts</Link><Link href="/temples">Choose another temple</Link></nav><p className="mt-6 text-xs">Accounts, bookings, donations and receipts belong to this temple only.</p></div></footer>;
   return (
-    <footer className="relative overflow-hidden border-t border-[#e6dccd] bg-[#102c4a] text-[#d9d2c8]">
-
-      {/* Decorative glow */}
-      <div className="pointer-events-none absolute -right-32 -top-32 h-80 w-80 rounded-full bg-[#b08a45]/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-[#287c72]/10 blur-3xl" />
-
-      <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
-
-          {/* Brand */}
-          <div className="lg:col-span-2">
-
-            <Link
-              href="/"
-              className="group inline-flex items-center gap-3"
-            >
-              <div className="relative flex h-12 w-12 items-center justify-center rounded-full border border-[#d1b06a]/40 bg-[#fffdf8]/10 transition group-hover:border-[#d1b06a]/80">
-                <span className="font-devanagari text-2xl text-[#d1b06a]">
-                  ॐ
-                </span>
-              </div>
-
-              <div>
-                <div className="font-display text-3xl font-semibold leading-none text-white">
-                  TempleOS
-                </div>
-
-                <div className="mt-1 text-[9px] font-semibold uppercase tracking-[0.24em] text-[#b9a995]">
-                  Temple Management
-                </div>
-              </div>
-            </Link>
-
-            <p className="mt-6 max-w-lg text-sm leading-7 text-[#b9b1a7]">
-              A modern digital platform connecting
-              devotees with temples, sevas, festivals,
-              events and meaningful acts of devotion.
-            </p>
-
-            <div className="mt-6 flex items-center gap-2 text-sm text-[#b9b1a7]">
-              <Heart className="h-4 w-4 text-[#d1b06a]" />
-              <span>
-                Built to bring temples closer to devotees.
+    <footer className="mandir-footer">
+      <div className="mandir-container">
+        <div className="mandir-footer-main">
+          <div>
+            <Link href="/" className="mandir-brand">
+              <span className="mandir-brand-mark">
+                <MandirMark />
               </span>
-            </div>
+              <span>
+                <strong>
+                  Radha Krishna <em>Mandir</em>
+                </strong>
+                <small>SHRI RAM MURTI SMARAK · BAREILLY</small>
+              </span>
+            </Link>
+            <p>
+              A space for prayer, a moment of peace, and a community brought
+              together by devotion.
+            </p>
+            <span className="mandir-footer-mantra" lang="hi">
+              राधे राधे
+            </span>
           </div>
-
-          {/* Explore */}
           <div>
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#d1b06a]">
-              Explore
-            </h3>
-
-            <div className="mt-5 space-y-3">
-              <Link
-                href="/temples"
-                className="group flex items-center justify-between text-sm text-[#d9d2c8] transition hover:text-white"
-              >
-                <span>Temples</span>
-                <ArrowUpRight className="h-3.5 w-3.5 opacity-0 transition group-hover:opacity-100" />
-              </Link>
-
-              <Link
-                href="/sevas"
-                className="group flex items-center justify-between text-sm text-[#d9d2c8] transition hover:text-white"
-              >
-                <span>Sevas</span>
-                <ArrowUpRight className="h-3.5 w-3.5 opacity-0 transition group-hover:opacity-100" />
-              </Link>
-
-              <Link
-                href="/events"
-                className="group flex items-center justify-between text-sm text-[#d9d2c8] transition hover:text-white"
-              >
-                <span>Events</span>
-                <ArrowUpRight className="h-3.5 w-3.5 opacity-0 transition group-hover:opacity-100" />
-              </Link>
-
-              <Link
-                href="/festivals"
-                className="group flex items-center justify-between text-sm text-[#d9d2c8] transition hover:text-white"
-              >
-                <span>Festivals</span>
-                <ArrowUpRight className="h-3.5 w-3.5 opacity-0 transition group-hover:opacity-100" />
-              </Link>
-            </div>
+            <h3>The Mandir</h3>
+            <Link href="/#our-mandir">Our story</Link>
+            <Link href="/#visit">Plan your visit</Link>
+            <Link href="/#panchang">Daily Panchang</Link>
+            <Link href="/festivals">Festivals</Link>
           </div>
-
-          {/* Account */}
           <div>
-            <h3 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#d1b06a]">
-              Account
-            </h3>
-
-            <div className="mt-5 space-y-3">
-              <Link
-                href="/login"
-                className="block text-sm text-[#d9d2c8] transition hover:text-white"
-              >
-                Sign In
-              </Link>
-
-              <Link
-                href="/register"
-                className="block text-sm text-[#d9d2c8] transition hover:text-white"
-              >
-                Create Account
-              </Link>
-
-              <Link
-                href="/donate"
-                className="block text-sm text-[#d9d2c8] transition hover:text-white"
-              >
-                Make a Donation
-              </Link>
-            </div>
+            <h3>Your devotion</h3>
+            <Link href="/sevas">Seva & offerings</Link>
+            <Link href="/donate">Make a donation</Link>
+            <Link href="/account/bookings">My bookings</Link>
+            <Link href="/account/receipts">My receipts</Link>
+          </div>
+          <div>
+            <h3>Come find your peace</h3>
+            <p>
+              <MapPin size={16} /> {mandir.address}
+            </p>
+            <a
+              href={mandir.directions}
+              target="_blank"
+              rel="noreferrer"
+              className="mandir-footer-direction"
+            >
+              Get directions <ArrowUpRight size={15} />
+            </a>
+            <a href={mandir.website} target="_blank" rel="noreferrer">
+              SRMS CET website <ArrowUpRight size={13} />
+            </a>
           </div>
         </div>
-
-        {/* Bottom */}
-        <div className="mt-14 border-t border-white/10 pt-7">
-
-          <div className="flex flex-col gap-4 text-xs text-[#938b82] sm:flex-row sm:items-center sm:justify-between">
-
-            <p>
-              © {new Date().getFullYear()} TempleOS.
-              All rights reserved.
-            </p>
-
-            <div className="flex items-center gap-2">
-              <span className="h-1 w-1 rounded-full bg-[#d1b06a]" />
-              <span>
-                Digital infrastructure for modern temples.
-              </span>
-            </div>
-          </div>
+        <div className="mandir-footer-bottom">
+          <span>
+            © {new Date().getFullYear()} {mandir.name} · SRMS CET
+          </span>
+          <Lotus />
+          <a href={mandir.photoSource} target="_blank" rel="noreferrer">
+            Temple photography courtesy of SRMS Institutions
+          </a>
         </div>
       </div>
     </footer>

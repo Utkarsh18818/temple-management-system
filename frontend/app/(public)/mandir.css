@@ -1,0 +1,1980 @@
+/* Public mandir theme; deliberately scoped away from the administration app. */
+.mandir-public {
+  --mandir-ink: #422c27;
+  --mandir-muted: #81736a;
+  --mandir-wine: #762d36;
+  --mandir-gold: #ac804b;
+  --mandir-paper: #fcf9f2;
+  --mandir-line: #e8dfd0;
+  color: var(--mandir-ink);
+  background: var(--mandir-paper);
+  font-family: var(--font-sans), sans-serif;
+}
+.mandir-container {
+  width: min(1240px, calc(100% - 96px));
+  margin-inline: auto;
+}
+.mandir-public h1,
+.mandir-public h2,
+.mandir-public h3,
+.mandir-public h4 {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+.mandir-home h2 {
+  font-size: clamp(36px, 3.7vw, 52px);
+  line-height: 1.12;
+}
+.mandir-public h2 em {
+  color: var(--mandir-wine);
+  font-weight: 500;
+}
+.mandir-public p {
+  line-height: 1.85;
+}
+.mandir-public section[id] {
+  scroll-margin-top: 110px;
+}
+.mandir-public button,
+.mandir-public a,
+.mandir-public input {
+  touch-action: manipulation;
+}
+.mandir-public button {
+  cursor: pointer;
+}
+.mandir-public button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.mandir-public :focus-visible {
+  outline: 2px solid var(--mandir-wine);
+  outline-offset: 5px;
+}
+.mandir-skip {
+  position: fixed;
+  left: 20px;
+  top: -80px;
+  z-index: 100;
+  background: var(--mandir-wine);
+  color: white;
+  padding: 12px 20px;
+}
+.mandir-skip:focus {
+  top: 8px;
+}
+.mandir-topbar {
+  background: var(--mandir-wine);
+  color: #f6e6cf;
+  font-size: 10px;
+  letter-spacing: 0.035em;
+}
+.mandir-topbar .mandir-container {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mandir-topbar [lang="hi"] {
+  font-family: var(--font-devanagari), serif;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+.mandir-topbar a {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+.mandir-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #fcf9f2f5;
+  border-bottom: 1px solid var(--mandir-line);
+  backdrop-filter: blur(16px);
+}
+.mandir-nav {
+  min-height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.mandir-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.mandir-brand-mark {
+  display: block;
+  width: 51px;
+  height: 59px;
+  color: var(--mandir-wine);
+}
+.mandir-brand-mark svg {
+  width: 100%;
+  height: 100%;
+}
+.mandir-brand strong {
+  font-family: var(--font-display), Georgia, serif;
+  display: block;
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+.mandir-brand em {
+  display: block;
+  font-style: normal;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  margin-top: 3px;
+}
+.mandir-brand small {
+  display: block;
+  font-size: 7px;
+  letter-spacing: 0.16em;
+  margin-top: 9px;
+  color: var(--mandir-muted);
+  font-weight: 600;
+}
+.mandir-desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  margin-left: auto;
+}
+.mandir-desktop-nav a {
+  position: relative;
+  padding-block: 16px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: #65534a;
+}
+.mandir-desktop-nav a:hover,
+.mandir-desktop-nav a.is-active {
+  color: var(--mandir-wine);
+}
+.mandir-desktop-nav a.is-active:after {
+  content: "";
+  position: absolute;
+  bottom: 7px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--mandir-wine);
+}
+.mandir-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.mandir-account {
+  color: var(--mandir-ink);
+  padding: 6px;
+}
+.mandir-auth-loading {
+  width: 30px;
+  height: 30px;
+  background: #e8dfd0;
+  border-radius: 50%;
+}
+.mandir-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: var(--mandir-wine);
+  border: 1px solid var(--mandir-wine);
+  color: #fffaf1;
+  padding: 17px 25px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 3px;
+  line-height: 1.2;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+.mandir-button:hover {
+  background: #5f202b;
+  transform: translateY(-2px);
+}
+.mandir-button-small {
+  padding: 13px 18px;
+  gap: 9px;
+  font-size: 11px;
+}
+.mandir-menu-toggle {
+  display: none;
+  padding: 8px;
+}
+.mandir-mobile-nav {
+  display: none;
+}
+.mandir-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mandir-wine);
+  line-height: 1.5;
+}
+.mandir-text-link:hover {
+  gap: 21px;
+}
+.mandir-overline {
+  font-size: 9px;
+  letter-spacing: 0.19em;
+  font-weight: 600;
+  color: #956f43;
+  display: block;
+  line-height: 1.6;
+}
+.mandir-small-rule {
+  display: inline-block;
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+  vertical-align: middle;
+  margin-right: 12px;
+}
+.mandir-home {
+  overflow: clip;
+}
+.mandir-hero {
+  position: relative;
+  background: radial-gradient(ellipse at 5% 70%, #f5ead9 0, transparent 60%);
+  padding: 52px 0 42px;
+}
+.mandir-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.04fr;
+  gap: 36px;
+  align-items: center;
+}
+.mandir-hero-copy {
+  padding-block: 16px;
+}
+.mandir-hero-hindi {
+  font-family: var(--font-devanagari), serif;
+  color: var(--mandir-wine);
+  font-size: 18px;
+  margin: 29px 0 12px;
+}
+.mandir-hero h1 {
+  font-size: clamp(58px, 6.1vw, 85px);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+}
+.mandir-hero h1 em {
+  color: var(--mandir-wine);
+  font-weight: 500;
+}
+.mandir-hero-name {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin-top: 22px;
+}
+.mandir-hero-description {
+  font-size: 12px;
+  color: var(--mandir-muted);
+  margin-top: 12px;
+  line-height: 1.9 !important;
+}
+.mandir-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 31px;
+  margin-top: 29px;
+}
+.mandir-hero-scroll {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: 45px;
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  color: var(--mandir-muted);
+}
+.mandir-hero-scroll > span {
+  width: 29px;
+  height: 29px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #cfc2af;
+  border-radius: 50%;
+  color: var(--mandir-gold);
+}
+.mandir-hero-visual {
+  position: relative;
+  padding: 17px 20px 20px 12px;
+  align-self: stretch;
+  min-height: 525px;
+}
+.mandir-hero-photo {
+  position: relative;
+  height: 100%;
+  min-height: 500px;
+  overflow: hidden;
+  border-radius: 48% 48% 2px 2px;
+  border: 6px solid var(--mandir-paper);
+  outline: 1px solid #c5a87b;
+  isolation: isolate;
+}
+.mandir-photo {
+  object-fit: cover;
+  transition: transform 0.7s;
+}
+.mandir-hero-photo .mandir-photo {
+  object-position: 50% 48%;
+}
+.mandir-photo-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, #241b12a8, transparent 35%);
+}
+.mandir-arch-outline {
+  position: absolute;
+  inset: 0 7px 8px 0;
+  border: 1px solid #d9c6a5;
+  border-radius: 48% 48% 2px 2px;
+}
+.mandir-hero-visual:before {
+  content: "";
+  position: absolute;
+  width: 450px;
+  height: 450px;
+  border: 1px solid #dfcfb3;
+  border-radius: 50%;
+  right: -100px;
+  top: 40px;
+  opacity: 0.35;
+  z-index: 0;
+}
+.mandir-photo-label {
+  position: absolute;
+  bottom: 23px;
+  left: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: white;
+}
+.mandir-photo-label [lang="hi"] {
+  margin-left: auto;
+  font-family: var(--font-devanagari), serif;
+  font-size: 17px;
+  color: #f8dfab;
+}
+.mandir-blessing-seal {
+  position: absolute;
+  left: -29px;
+  bottom: 50px;
+  border: 1px solid #c3a06b;
+  outline: 5px solid var(--mandir-paper);
+  width: 106px;
+  height: 106px;
+  border-radius: 50%;
+  background: var(--mandir-paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: var(--mandir-wine);
+  transform: rotate(-9deg);
+}
+.mandir-blessing-seal svg {
+  width: 32px;
+  height: 23px;
+  color: var(--mandir-gold);
+}
+.mandir-blessing-seal > span {
+  font-size: 27px;
+  font-family: var(--font-devanagari), serif;
+  line-height: 1.5;
+}
+.mandir-blessing-seal small {
+  font-size: 6px;
+  letter-spacing: 0.1em;
+}
+.mandir-hero-side-text {
+  position: absolute;
+  right: -10px;
+  top: 155px;
+  writing-mode: vertical-rl;
+  font-size: 7px;
+  letter-spacing: 0.24em;
+  color: var(--mandir-muted);
+}
+.mandir-quicklinks {
+  border-block: 1px solid var(--mandir-line);
+  background: #fffdf8;
+}
+.mandir-quicklinks > .mandir-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.mandir-quicklinks a {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 29px 22px;
+  border-right: 1px solid var(--mandir-line);
+}
+.mandir-quicklinks a:first-child {
+  padding-left: 0;
+}
+.mandir-quicklinks a:last-child {
+  padding-right: 0;
+  border: 0;
+}
+.mandir-quicklinks a > svg:first-child {
+  color: var(--mandir-gold);
+  width: 24px;
+  height: 24px;
+  stroke-width: 1.3;
+  flex-shrink: 0;
+}
+.mandir-quicklinks strong {
+  display: block;
+  font-family: var(--font-display), serif;
+  font-size: 20px;
+  font-weight: 600;
+}
+.mandir-quicklinks small {
+  display: block;
+  font-size: 9px;
+  color: var(--mandir-muted);
+  margin-top: 4px;
+}
+.mandir-quicklinks a > svg:last-child {
+  margin-left: auto;
+  color: var(--mandir-gold);
+  flex-shrink: 0;
+}
+.mandir-quicklinks a:hover strong {
+  color: var(--mandir-wine);
+}
+.mandir-section-intro {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.mandir-section-intro h2 {
+  margin: 10px 0;
+}
+.mandir-section-intro > p {
+  font-size: 12px;
+  color: var(--mandir-muted);
+}
+.mandir-panchang-section {
+  padding: 65px 0 70px;
+  background: #f9f4e9;
+}
+.mandir-panchang {
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  background: #fffdf9;
+  border: 1px solid #deceb2;
+  border-radius: 5px;
+  box-shadow: 0 8px 35px #654a2110;
+  overflow: hidden;
+}
+.mandir-panchang-date {
+  position: relative;
+  background: #782f38;
+  color: #fff5e6;
+  padding: 26px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.mandir-panchang-date > svg {
+  width: 47px;
+  height: 33px;
+  color: #d6b37a;
+  margin-bottom: 12px;
+}
+.mandir-panchang-date .mandir-overline {
+  font-size: 8px;
+  color: #e3c497;
+}
+.mandir-panchang-date h3 {
+  font-size: 33px;
+  margin-top: 9px;
+}
+.mandir-panchang-date > p {
+  font-size: 11px;
+  color: #f0d8c5;
+  margin-top: 2px;
+}
+.mandir-panchang-location {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  margin-top: 13px;
+  color: #e7cbb9;
+}
+.mandir-date-controls {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: 20px;
+  width: 100%;
+  justify-content: center;
+}
+.mandir-date-controls > button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #b5797d;
+}
+.mandir-date-controls > button:hover {
+  background: #ffffff15;
+}
+.mandir-date-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #b5797d;
+  padding: 7px 12px;
+  font-size: 9px;
+  cursor: pointer;
+}
+.mandir-date-input input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  color-scheme: light;
+}
+.mandir-date-input input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  inset: 0;
+  cursor: pointer;
+}
+.mandir-today {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 9px;
+  margin-top: 10px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.mandir-panchang-body {
+  padding: 34px 30px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+.mandir-panchang-elements {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.mandir-panchang-elements > div {
+  padding: 0 18px;
+  border-right: 1px solid var(--mandir-line);
+  min-width: 0;
+}
+.mandir-panchang-elements > div:first-child {
+  padding-left: 0;
+}
+.mandir-panchang-elements > div:last-child {
+  border: 0;
+  padding-right: 0;
+}
+.mandir-panchang-label {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mandir-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+}
+.mandir-panchang-label [lang="hi"] {
+  font-size: 12px;
+  letter-spacing: 0;
+  color: #ab946f;
+}
+.mandir-panchang-elements h4 {
+  font-size: 25px;
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+.mandir-panchang-elements p {
+  font-size: 9px;
+  color: var(--mandir-muted);
+  margin-top: 5px;
+}
+.mandir-sun-times {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.7fr;
+  border-top: 1px solid var(--mandir-line);
+  margin-top: 27px;
+  padding-top: 22px;
+  gap: 16px;
+}
+.mandir-sun-times > div {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+}
+.mandir-sun-times svg {
+  width: 24px;
+  height: 24px;
+  color: var(--mandir-gold);
+  stroke-width: 1.3;
+  flex-shrink: 0;
+}
+.mandir-sun-times span {
+  font-size: 9px;
+  color: var(--mandir-muted);
+}
+.mandir-sun-times strong {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--mandir-ink);
+  margin-top: 4px;
+}
+.mandir-panchang-note {
+  font-size: 8px;
+  color: var(--mandir-muted);
+  margin-top: 22px;
+}
+.mandir-panchang-loading {
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  font-size: 12px;
+  color: var(--mandir-muted);
+}
+.mandir-story {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 85px;
+  padding-block: 85px;
+}
+.mandir-story-images {
+  position: relative;
+  padding: 0 22px 38px 0;
+}
+.mandir-story-photo {
+  position: relative;
+  aspect-ratio: 1.15;
+  overflow: hidden;
+  border-radius: 3px 90px 3px 3px;
+}
+.mandir-story-images:before {
+  content: "";
+  position: absolute;
+  inset: 20px 0 17px 19px;
+  border: 1px solid #c6ae88;
+  border-radius: 3px 90px 3px 3px;
+}
+.mandir-story-caption {
+  position: absolute;
+  bottom: 0;
+  right: 45px;
+  background: var(--mandir-paper);
+  padding: 16px 27px 0;
+  text-align: center;
+}
+.mandir-story-caption svg {
+  width: 37px;
+  height: 25px;
+  margin: 0 auto 7px;
+  color: var(--mandir-gold);
+}
+.mandir-story-caption > span {
+  display: block;
+  font-family: var(--font-devanagari), serif;
+  font-size: 20px;
+  color: var(--mandir-wine);
+}
+.mandir-story-caption small {
+  font-size: 7px;
+  letter-spacing: 0.15em;
+  color: var(--mandir-muted);
+}
+.mandir-story-copy h2 {
+  margin: 15px 0 24px;
+}
+.mandir-story-copy > p {
+  font-size: 12px;
+  color: var(--mandir-muted);
+  margin-bottom: 14px;
+}
+.mandir-story-values {
+  display: flex;
+  gap: 23px;
+  padding: 18px 0;
+  margin: 12px 0 22px;
+  border-block: 1px solid var(--mandir-line);
+  font-size: 10px;
+  color: var(--mandir-wine);
+}
+.mandir-story-values span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.mandir-section-heading {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 34px;
+}
+.mandir-section-heading h2 {
+  margin-top: 12px;
+}
+.mandir-section-heading > .mandir-text-link {
+  flex-shrink: 0;
+  margin-bottom: 5px;
+}
+.mandir-offerings-section {
+  background: #f4eee1;
+  padding: 65px 0;
+}
+.mandir-offerings {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid #dfd0b5;
+  background: var(--mandir-paper);
+}
+.mandir-offering {
+  padding: 31px 31px 28px;
+  border-right: 1px solid #dfd0b5;
+  transition: background 0.25s;
+}
+.mandir-offering:last-child {
+  border: 0;
+}
+.mandir-offering:hover {
+  background: #fffdf9;
+}
+.mandir-offering-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mandir-offering-top > svg {
+  color: var(--mandir-wine);
+  width: 34px;
+  height: 34px;
+}
+.mandir-offering-top > span {
+  font-family: var(--font-display), serif;
+  font-size: 25px;
+  color: #cbbda5;
+}
+.mandir-offering h3 {
+  font-size: 30px;
+  margin-top: 26px;
+}
+.mandir-offering p {
+  font-size: 11px;
+  color: var(--mandir-muted);
+  margin: 14px 0 27px;
+  max-width: 290px;
+}
+.mandir-publishing-note {
+  font-size: 10px;
+  color: var(--mandir-muted);
+  margin-top: 18px;
+  text-align: center;
+}
+.mandir-published-sevas {
+  margin-top: 25px;
+}
+.mandir-published-sevas h3 {
+  font-size: 27px;
+  margin-bottom: 10px;
+}
+.mandir-published-sevas > a {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--mandir-line);
+  font-size: 13px;
+}
+.mandir-published-sevas > a strong {
+  margin-left: auto;
+}
+.mandir-upcoming {
+  padding-block: 70px;
+}
+.mandir-event-row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--mandir-line);
+  font-size: 11px;
+}
+.mandir-event-row > svg {
+  color: var(--mandir-gold);
+}
+.mandir-event-row h3 {
+  font-size: 26px;
+  flex: 1;
+}
+.mandir-memories {
+  padding-block: 80px;
+}
+.mandir-gallery-note {
+  font-size: 10px;
+  color: var(--mandir-muted);
+  margin-bottom: 5px;
+}
+.mandir-memory-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 26px;
+}
+.mandir-memory-grid figure > div {
+  position: relative;
+  aspect-ratio: 1.34;
+  overflow: hidden;
+  border-radius: 3px;
+}
+.mandir-memory-grid figure:hover .mandir-photo {
+  transform: scale(1.04);
+}
+.mandir-memory-grid figcaption {
+  padding-top: 20px;
+}
+.mandir-memory-grid .mandir-overline {
+  font-size: 8px;
+  letter-spacing: 0.13em;
+}
+.mandir-memory-grid h3 {
+  font-size: 25px;
+  margin-top: 8px;
+  line-height: 1.2;
+}
+.mandir-visit-section {
+  background: #f0e8d8;
+  border-block: 1px solid var(--mandir-line);
+  padding: 70px 0;
+}
+.mandir-visit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 100px;
+  align-items: center;
+}
+.mandir-visit-grid h2 {
+  margin-top: 14px;
+}
+.mandir-visit-grid > div > p {
+  font-size: 12px;
+  color: var(--mandir-muted);
+  margin: 20px 0 28px;
+  max-width: 430px;
+}
+.mandir-visit-info {
+  padding-left: 36px;
+  border-left: 1px solid #d8c8ad;
+}
+.mandir-visit-info > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 17px;
+  margin-bottom: 24px;
+}
+.mandir-visit-info > div > svg {
+  width: 20px;
+  flex-shrink: 0;
+  color: var(--mandir-wine);
+  stroke-width: 1.5;
+  margin-top: 3px;
+}
+.mandir-visit-info h3 {
+  font-size: 24px;
+}
+.mandir-visit-info p {
+  font-size: 11px;
+  color: #78695b;
+  line-height: 1.85;
+  margin-top: 5px;
+  max-width: 370px;
+}
+.mandir-visit-info > .mandir-text-link {
+  margin-left: 37px;
+}
+.mandir-closing {
+  text-align: center;
+  padding: 47px 24px 43px;
+}
+.mandir-closing > svg {
+  width: 44px;
+  height: 31px;
+  margin: 0 auto 12px;
+  color: var(--mandir-gold);
+}
+.mandir-closing > p {
+  font-family: var(--font-devanagari), serif;
+  font-size: 22px;
+  color: var(--mandir-wine);
+}
+.mandir-closing > span {
+  font-size: 10px;
+  color: var(--mandir-muted);
+  display: block;
+  margin-top: 5px;
+}
+.mandir-footer {
+  background: #402b2b;
+  color: #efe3cf;
+  border-top: 3px solid #b18a51;
+  padding-top: 50px;
+}
+.mandir-footer-main {
+  display: grid;
+  grid-template-columns: 1.5fr 0.8fr 0.8fr 1.1fr;
+  gap: 50px;
+  padding-bottom: 40px;
+}
+.mandir-footer .mandir-brand-mark {
+  color: #cca571;
+}
+.mandir-footer .mandir-brand small {
+  color: #d7c2aa;
+}
+.mandir-footer-main > div > p {
+  font-size: 10px;
+  color: #c5b4a4;
+  max-width: 265px;
+  margin-top: 19px;
+  line-height: 1.9;
+}
+.mandir-footer-main > div:last-child > p {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  margin-top: 16px;
+}
+.mandir-footer-main > div:last-child > p svg {
+  flex-shrink: 0;
+  margin-top: 4px;
+  color: #cca571;
+}
+.mandir-footer-mantra {
+  display: block;
+  font-family: var(--font-devanagari), serif;
+  color: #cca571;
+  margin-top: 18px;
+  font-size: 23px;
+}
+.mandir-footer h3 {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: #f0dfc6;
+  margin-bottom: 22px;
+}
+.mandir-footer-main > div > a:not(.mandir-brand) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: #cbb9a6;
+  margin-top: 13px;
+}
+.mandir-footer-main a:hover {
+  color: #fff7e9;
+}
+.mandir-footer-main .mandir-footer-direction {
+  color: #e6bd83 !important;
+}
+.mandir-footer-bottom {
+  border-top: 1px solid #785c4e;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 0;
+  color: #c2ae99;
+  font-size: 8px;
+}
+.mandir-footer-bottom > svg {
+  width: 30px;
+  height: 22px;
+  color: #ba956a;
+}
+@media (min-width: 1500px) {
+  .mandir-hero {
+    padding-block: 65px;
+  }
+  .mandir-hero-visual {
+    min-height: 580px;
+  }
+}
+@media (max-width: 1150px) {
+  .mandir-container {
+    width: calc(100% - 64px);
+  }
+  .mandir-desktop-nav {
+    gap: 17px;
+  }
+  .mandir-nav {
+    gap: 18px;
+  }
+  .mandir-brand strong {
+    font-size: 22px;
+  }
+  .mandir-brand-mark {
+    width: 43px;
+  }
+  .mandir-brand small {
+    font-size: 6px;
+  }
+  .mandir-nav-actions {
+    gap: 12px;
+  }
+  .mandir-hero h1 {
+    font-size: 68px;
+  }
+  .mandir-hero-visual {
+    min-height: 490px;
+  }
+  .mandir-hero-photo {
+    min-height: 465px;
+  }
+  .mandir-quicklinks a {
+    gap: 12px;
+    padding-inline: 17px;
+  }
+  .mandir-quicklinks strong {
+    font-size: 19px;
+  }
+  .mandir-quicklinks small {
+    font-size: 8px;
+  }
+  .mandir-panchang {
+    grid-template-columns: 240px 1fr;
+  }
+  .mandir-panchang-body {
+    padding: 26px 22px 20px;
+  }
+  .mandir-panchang-elements > div {
+    padding-inline: 11px;
+  }
+  .mandir-panchang-elements h4 {
+    font-size: 23px;
+  }
+  .mandir-sun-times {
+    gap: 10px;
+  }
+  .mandir-sun-times strong {
+    font-size: 10px;
+  }
+  .mandir-story {
+    gap: 45px;
+  }
+  .mandir-visit-grid {
+    gap: 50px;
+  }
+  .mandir-footer-main {
+    gap: 30px;
+  }
+}
+@media (max-width: 1000px) {
+  .mandir-desktop-nav {
+    display: none;
+  }
+  .mandir-nav-actions {
+    margin-left: auto;
+  }
+  .mandir-menu-toggle {
+    display: block;
+  }
+  .mandir-mobile-nav {
+    display: grid;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    background: var(--mandir-paper);
+    padding: 12px 32px 22px;
+    border-bottom: 1px solid var(--mandir-line);
+    box-shadow: 0 16px 25px #422c2712;
+  }
+  .mandir-mobile-nav > a,
+  .mandir-mobile-nav > button {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--mandir-line);
+    font-size: 12px;
+    text-align: left;
+  }
+  .mandir-mobile-nav > button {
+    display: flex;
+    gap: 10px;
+  }
+  .mandir-hero h1 {
+    font-size: 60px;
+  }
+  .mandir-hero-grid {
+    gap: 20px;
+  }
+  .mandir-hero-visual {
+    min-height: 460px;
+  }
+  .mandir-hero-photo {
+    min-height: 435px;
+  }
+  .mandir-hero-description {
+    font-size: 11px;
+  }
+  .mandir-desktop-break {
+    display: none;
+  }
+  .mandir-quicklinks > .mandir-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .mandir-quicklinks a:nth-child(2) {
+    border: 0;
+  }
+  .mandir-quicklinks a:nth-child(3) {
+    padding-left: 0;
+    border-top: 1px solid var(--mandir-line);
+  }
+  .mandir-quicklinks a:nth-child(4) {
+    border-top: 1px solid var(--mandir-line);
+    padding-left: 17px;
+  }
+  .mandir-quicklinks a {
+    padding-block: 21px;
+  }
+  .mandir-panchang {
+    grid-template-columns: 220px 1fr;
+  }
+  .mandir-panchang-elements {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px 0;
+  }
+  .mandir-panchang-elements > div:nth-child(2) {
+    border: 0;
+  }
+  .mandir-panchang-elements > div:nth-child(3) {
+    padding-left: 0;
+  }
+  .mandir-panchang-elements h4 {
+    margin-top: 6px;
+  }
+  .mandir-sun-times {
+    grid-template-columns: 1fr 1fr;
+  }
+  .mandir-sun-times > div:last-child {
+    grid-column: span 2;
+  }
+  .mandir-story {
+    gap: 30px;
+  }
+  .mandir-story-values {
+    gap: 13px;
+    font-size: 9px;
+  }
+  .mandir-offering {
+    padding: 24px;
+  }
+  .mandir-offering h3 {
+    font-size: 27px;
+  }
+  .mandir-memory-grid {
+    gap: 18px;
+  }
+  .mandir-memory-grid h3 {
+    font-size: 23px;
+  }
+  .mandir-footer-main {
+    grid-template-columns: 1.3fr 1fr;
+    gap: 35px 60px;
+  }
+}
+@media (max-width: 767px) {
+  .mandir-container {
+    width: calc(100% - 40px);
+  }
+  .mandir-topbar .mandir-container {
+    height: 30px;
+    justify-content: center;
+  }
+  .mandir-topbar a {
+    display: none;
+  }
+  .mandir-topbar [lang="hi"] {
+    font-size: 10px;
+  }
+  .mandir-nav {
+    min-height: 79px;
+    gap: 10px;
+  }
+  .mandir-brand {
+    gap: 8px;
+  }
+  .mandir-brand-mark {
+    height: 46px;
+    width: 37px;
+  }
+  .mandir-brand strong {
+    font-size: 21px;
+  }
+  .mandir-brand em {
+    font-size: 16px;
+    letter-spacing: 0.1em;
+  }
+  .mandir-brand small {
+    font-size: 5.5px;
+    letter-spacing: 0.1em;
+    margin-top: 6px;
+  }
+  .mandir-nav-actions {
+    gap: 6px;
+  }
+  .mandir-button-small {
+    padding: 11px 13px;
+    font-size: 10px;
+  }
+  .mandir-button-small svg {
+    display: none;
+  }
+  .mandir-account {
+    padding: 4px;
+  }
+  .mandir-account svg {
+    width: 17px;
+  }
+  .mandir-menu-toggle {
+    padding: 5px;
+  }
+  .mandir-mobile-nav {
+    padding-inline: 20px;
+  }
+  .mandir-hero {
+    padding: 30px 0;
+  }
+  .mandir-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .mandir-hero-copy {
+    padding: 0;
+  }
+  .mandir-hero .mandir-overline {
+    font-size: 8px;
+    letter-spacing: 0.14em;
+  }
+  .mandir-hero-hindi {
+    font-size: 17px;
+    margin: 20px 0 12px;
+  }
+  .mandir-hero h1 {
+    font-size: clamp(54px, 10vw, 72px);
+  }
+  .mandir-hero-name {
+    font-size: 14px;
+    margin-top: 18px;
+  }
+  .mandir-hero-description {
+    font-size: 12px;
+    max-width: 400px;
+  }
+  .mandir-hero-actions {
+    margin-top: 24px;
+    gap: 25px;
+  }
+  .mandir-hero-scroll {
+    display: none;
+  }
+  .mandir-hero-visual {
+    min-height: 0;
+    width: min(100%, 500px);
+    margin-inline: auto;
+    padding: 14px 16px 16px 10px;
+  }
+  .mandir-hero-photo {
+    min-height: 0;
+    aspect-ratio: 1.05;
+    height: auto;
+    border-radius: 47% 47% 2px 2px;
+  }
+  .mandir-arch-outline {
+    border-radius: 47% 47% 2px 2px;
+  }
+  .mandir-blessing-seal {
+    width: 84px;
+    height: 84px;
+    left: -4px;
+    bottom: 38px;
+    outline-width: 4px;
+  }
+  .mandir-blessing-seal > span {
+    font-size: 23px;
+  }
+  .mandir-blessing-seal small {
+    font-size: 5px;
+  }
+  .mandir-blessing-seal svg {
+    width: 26px;
+  }
+  .mandir-hero-side-text {
+    right: -4px;
+    top: 110px;
+    font-size: 6px;
+  }
+  .mandir-photo-label {
+    left: 22px;
+    bottom: 19px;
+    font-size: 8px;
+  }
+  .mandir-photo-label [lang="hi"] {
+    font-size: 14px;
+  }
+  .mandir-quicklinks a {
+    gap: 9px;
+    padding-inline: 11px;
+    padding-block: 20px;
+  }
+  .mandir-quicklinks a:nth-child(4) {
+    padding-left: 11px;
+  }
+  .mandir-quicklinks a > svg:first-child {
+    width: 20px;
+    height: 20px;
+  }
+  .mandir-quicklinks a > svg:last-child {
+    display: none;
+  }
+  .mandir-quicklinks strong {
+    font-size: 18px;
+  }
+  .mandir-quicklinks small {
+    font-size: 8px;
+    line-height: 1.5;
+  }
+  .mandir-panchang-section {
+    padding: 43px 0;
+  }
+  .mandir-section-intro {
+    margin-bottom: 25px;
+  }
+  .mandir-home h2 {
+    font-size: 37px;
+  }
+  .mandir-section-intro > p {
+    font-size: 11px;
+  }
+  .mandir-overline {
+    font-size: 8px;
+    letter-spacing: 0.14em;
+  }
+  .mandir-panchang {
+    grid-template-columns: 1fr;
+  }
+  .mandir-panchang-date {
+    padding: 24px 20px;
+  }
+  .mandir-panchang-date > svg {
+    width: 36px;
+    height: 26px;
+    margin-bottom: 8px;
+  }
+  .mandir-panchang-date h3 {
+    font-size: 30px;
+  }
+  .mandir-panchang-date .mandir-overline {
+    font-size: 7px;
+  }
+  .mandir-date-controls {
+    margin-top: 15px;
+  }
+  .mandir-panchang-body {
+    padding: 25px 22px 20px;
+  }
+  .mandir-panchang-elements {
+    gap: 25px 0;
+  }
+  .mandir-panchang-elements > div {
+    padding-inline: 16px;
+  }
+  .mandir-panchang-elements h4 {
+    font-size: 25px;
+  }
+  .mandir-panchang-label {
+    font-size: 9px;
+  }
+  .mandir-panchang-elements p {
+    font-size: 10px;
+  }
+  .mandir-sun-times {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .mandir-sun-times > div:last-child {
+    grid-column: span 2;
+  }
+  .mandir-sun-times strong {
+    font-size: 12px;
+  }
+  .mandir-panchang-note {
+    font-size: 8px;
+    margin-top: 20px;
+  }
+  .mandir-story {
+    grid-template-columns: 1fr;
+    padding-block: 50px;
+    gap: 32px;
+  }
+  .mandir-story-images {
+    padding-right: 20px;
+    max-width: 530px;
+  }
+  .mandir-story-photo {
+    aspect-ratio: 1.15;
+  }
+  .mandir-story-caption {
+    right: 35px;
+  }
+  .mandir-story-copy h2 {
+    margin-top: 12px;
+  }
+  .mandir-story-copy > p {
+    font-size: 12px;
+  }
+  .mandir-story-values {
+    font-size: 10px;
+    gap: 22px;
+  }
+  .mandir-offerings-section {
+    padding-block: 45px;
+  }
+  .mandir-section-heading {
+    display: block;
+    margin-bottom: 25px;
+  }
+  .mandir-section-heading > .mandir-text-link,
+  .mandir-gallery-note {
+    display: inline-flex;
+    margin-top: 18px;
+    font-size: 10px;
+  }
+  .mandir-offerings {
+    grid-template-columns: 1fr;
+  }
+  .mandir-offering {
+    padding: 27px;
+    border-right: 0;
+    border-bottom: 1px solid #dfd0b5;
+  }
+  .mandir-offering h3 {
+    margin-top: 17px;
+    font-size: 32px;
+  }
+  .mandir-offering p {
+    max-width: none;
+    font-size: 12px;
+    margin-bottom: 22px;
+  }
+  .mandir-publishing-note {
+    font-size: 9px;
+    text-align: left;
+  }
+  .mandir-memories {
+    padding-block: 50px;
+  }
+  .mandir-memory-grid {
+    grid-template-columns: 1fr;
+    gap: 31px;
+  }
+  .mandir-memory-grid figure > div {
+    aspect-ratio: 1.5;
+  }
+  .mandir-memory-grid figcaption {
+    padding-top: 13px;
+  }
+  .mandir-memory-grid h3 {
+    font-size: 27px;
+  }
+  .mandir-visit-section {
+    padding-block: 45px;
+  }
+  .mandir-visit-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .mandir-visit-info {
+    padding: 27px 0 0;
+    border-left: 0;
+    border-top: 1px solid #d8c8ad;
+  }
+  .mandir-visit-info h3 {
+    font-size: 24px;
+  }
+  .mandir-visit-info p {
+    font-size: 12px;
+  }
+  .mandir-closing {
+    padding-block: 33px;
+  }
+  .mandir-closing > p {
+    font-size: 18px;
+  }
+  .mandir-closing > span {
+    font-size: 9px;
+  }
+  .mandir-footer {
+    padding-top: 35px;
+  }
+  .mandir-footer-main {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px 30px;
+    padding-bottom: 30px;
+  }
+  .mandir-footer-main > div:first-child,
+  .mandir-footer-main > div:last-child {
+    grid-column: span 2;
+  }
+  .mandir-footer-main > div > p {
+    font-size: 11px;
+    max-width: 320px;
+  }
+  .mandir-footer-main > div > a:not(.mandir-brand) {
+    font-size: 11px;
+  }
+  .mandir-footer h3 {
+    font-size: 11px;
+    margin-bottom: 18px;
+  }
+  .mandir-footer-bottom {
+    flex-direction: column;
+    gap: 13px;
+    text-align: center;
+    font-size: 8px;
+  }
+  .mandir-footer-bottom > svg {
+    display: none;
+  }
+  .mandir-upcoming {
+    padding-block: 45px;
+  }
+  .mandir-event-row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .mandir-event-row h3 {
+    flex-basis: 100%;
+  }
+}
+.mandir-page-hero {
+  background: #f2eadb;
+  border-bottom: 1px solid #dfd1ba;
+  padding: 27px 0 50px;
+}
+.mandir-page-hero nav {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 10px;
+  color: #8c7865;
+  margin-bottom: 36px;
+}
+.mandir-page-hero nav a {
+  color: var(--mandir-wine);
+}
+.mandir-page-hero-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+}
+.mandir-page-hero h1 {
+  font-size: clamp(42px, 4.5vw, 64px);
+  line-height: 1.1;
+  margin-top: 13px;
+  max-width: 900px;
+}
+.mandir-page-hero h1 em {
+  color: var(--mandir-wine);
+}
+.mandir-page-hero-content > svg {
+  width: 105px;
+  height: 90px;
+  flex-shrink: 0;
+  color: #b3976b;
+  opacity: 0.6;
+}
+.mandir-page-hero p {
+  font-size: 12px;
+  color: var(--mandir-muted);
+  max-width: 630px;
+  margin-top: 19px;
+}
+.mandir-listing-body {
+  padding-block: 35px 70px;
+  min-height: 450px;
+}
+.mandir-calendar-tabs {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  border-bottom: 1px solid var(--mandir-line);
+  margin-bottom: 30px;
+}
+.mandir-calendar-tabs a {
+  font-size: 12px;
+  padding: 0 0 16px;
+  color: var(--mandir-muted);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.mandir-calendar-tabs a[aria-current] {
+  color: var(--mandir-wine);
+  border-bottom: 2px solid var(--mandir-wine);
+}
+.mandir-calendar-tabs a:last-child {
+  margin-left: auto;
+}
+.mandir-listing-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  padding-bottom: 26px;
+  border-bottom: 1px solid var(--mandir-line);
+}
+.mandir-listing-filters > label:not(.mandir-past-toggle) {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  flex: 1;
+  max-width: 430px;
+}
+.mandir-listing-filters > label > span:first-child {
+  font-size: 10px;
+  color: var(--mandir-muted);
+}
+.mandir-listing-filters select,
+.mandir-search-field {
+  height: 46px;
+  border: 1px solid #d9cbb6;
+  border-radius: 3px;
+  background: #fffdf9;
+  font-size: 12px;
+}
+.mandir-listing-filters select {
+  padding-inline: 12px;
+  max-width: 100%;
+}
+.mandir-search-field {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding-inline: 13px;
+  color: var(--mandir-gold);
+}
+.mandir-search-field input {
+  background: transparent;
+  outline: none;
+  width: 100%;
+  height: 100%;
+  color: var(--mandir-ink);
+}
+.mandir-past-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--mandir-muted);
+  padding-bottom: 14px;
+  white-space: nowrap;
+}
+.mandir-past-toggle input {
+  accent-color: var(--mandir-wine);
+}
+.mandir-empty {
+  padding: 75px 20px;
+  text-align: center;
+}
+.mandir-empty > svg {
+  width: 35px;
+  height: 35px;
+  color: var(--mandir-gold);
+  margin: auto;
+  stroke-width: 1.3;
+}
+.mandir-empty h2 {
+  font-size: 34px;
+  margin: 20px auto 12px;
+  max-width: 600px;
+}
+.mandir-empty p {
+  font-size: 12px;
+  max-width: 460px;
+  color: var(--mandir-muted);
+  margin: 10px auto 22px;
+}
+.mandir-listing-count {
+  font-size: 10px;
+  color: var(--mandir-muted);
+  margin: 24px 0;
+}
+.mandir-service-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 23px;
+}
+.mandir-service-card {
+  border: 1px solid #dfd1ba;
+  background: #fffdf8;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 3px;
+}
+.mandir-service-card > .mandir-overline {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 8px;
+}
+.mandir-service-card h2 {
+  font-size: 29px !important;
+  margin-top: 16px;
+  line-height: 1.15;
+}
+.mandir-service-card p {
+  font-size: 12px;
+  color: var(--mandir-muted);
+  margin-top: 17px;
+}
+.mandir-service-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--mandir-line);
+  padding-top: 20px;
+  margin-top: 30px;
+  gap: 15px;
+}
+.mandir-service-bottom strong {
+  font-size: 17px;
+  font-weight: 500;
+}
+.mandir-event-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 10px;
+  color: var(--mandir-muted);
+  margin-top: auto;
+  padding-top: 28px;
+}
+.mandir-event-meta span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mandir-festival-icon {
+  color: var(--mandir-wine);
+  width: 34px;
+  height: 34px;
+}
+/* Carry the public palette through existing account, booking and payment forms. */
+.mandir-public {
+  --krishna-blue: #762d36;
+  --krishna-blue-deep: #5b242d;
+  --peacock-green: #68764d;
+  --antique-gold: #a37b44;
+  --background: #fcf9f2;
+  --foreground: #422c27;
+  --border: #e8dfd0;
+}
+.mandir-public main > .min-h-screen {
+  background: var(--mandir-paper);
+}
+.mandir-public main .bg-stone-900 {
+  background-color: var(--mandir-wine);
+}
+.mandir-public main .bg-stone-50 {
+  background-color: #f6f0e5;
+}
+.mandir-public main .border-stone-200 {
+  border-color: var(--mandir-line);
+}
+.mandir-public main .rounded-3xl {
+  border-radius: 7px;
+}
+.mandir-public main .rounded-2xl {
+  border-radius: 5px;
+}
+.mandir-public main .rounded-xl {
+  border-radius: 4px;
+}
+@media (max-width: 1000px) {
+  .mandir-service-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 767px) {
+  .mandir-page-hero {
+    padding: 22px 0 35px;
+  }
+  .mandir-page-hero nav {
+    margin-bottom: 26px;
+  }
+  .mandir-page-hero-content > svg {
+    display: none;
+  }
+  .mandir-page-hero h1 {
+    font-size: 45px;
+  }
+  .mandir-page-hero p {
+    font-size: 12px;
+    margin-top: 15px;
+  }
+  .mandir-listing-body {
+    padding-block: 25px 45px;
+  }
+  .mandir-listing-filters {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .mandir-listing-filters > label:not(.mandir-past-toggle) {
+    flex-basis: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+  .mandir-listing-filters select {
+    width: 100%;
+  }
+  .mandir-past-toggle {
+    padding-bottom: 0;
+  }
+  .mandir-calendar-tabs {
+    gap: 19px;
+  }
+  .mandir-calendar-tabs a {
+    font-size: 10px;
+  }
+  .mandir-calendar-tabs a:last-child {
+    margin-left: 0;
+  }
+  .mandir-service-grid {
+    grid-template-columns: 1fr;
+  }
+  .mandir-service-card {
+    padding: 25px;
+  }
+  .mandir-empty {
+    padding: 50px 0;
+  }
+  .mandir-empty h2 {
+    font-size: 31px;
+  }
+}
+.mandir-directory-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+}
+.mandir-directory-card {
+  border: 1px solid var(--mandir-line);
+  border-radius: 3px;
+  overflow: hidden;
+  background: #fffdf8;
+}
+.mandir-directory-visual {
+  position: relative;
+  height: 210px;
+  background: radial-gradient(ellipse at center, #f3e4ca, #faf5ea);
+  display: grid;
+  place-items: center;
+  border-bottom: 1px solid var(--mandir-line);
+}
+.mandir-directory-visual > svg {
+  width: 80px;
+  height: 90px;
+  color: var(--mandir-gold);
+  stroke-width: 1;
+}
+.mandir-directory-copy {
+  padding: 25px;
+}
+.mandir-directory-copy h2 {
+  font-size: 29px;
+  line-height: 1.12;
+  margin-top: 12px;
+}
+.mandir-directory-copy > p {
+  font-size: 11px;
+  color: var(--mandir-muted);
+  margin-top: 14px;
+}
+.mandir-directory-location {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  color: var(--mandir-muted);
+  margin: 18px 0 24px;
+}
+.mandir-directory-card:hover {
+  border-color: var(--mandir-gold);
+}
+.mandir-directory-card:hover .mandir-photo {
+  transform: scale(1.03);
+}
+@media (max-width: 1000px) {
+  .mandir-directory-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 767px) {
+  .mandir-directory-grid {
+    grid-template-columns: 1fr;
+  }
+  .mandir-directory-copy h2 {
+    font-size: 30px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mandir-public * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}
+/* Legacy account and booking surfaces share the mandir palette. */
+.mandir-public section[class*="bg-[#71333e]"] :is(h1,h2,h3){color:#fffaf1}
+.mandir-public section[class*="bg-[#71333e]"]{background:#71333e;color:#fffaf1}
+.mandir-public :is(input,select,textarea,button,a):focus-visible{outline:3px solid #a87723;outline-offset:3px}

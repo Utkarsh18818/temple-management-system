@@ -36,3 +36,4 @@ class ReceiptResponse(BaseModel):
     pdf_path: str | None
 
     notes: str | None
+    status: str = "ISSUED"

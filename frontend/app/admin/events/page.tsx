@@ -1,4 +1,6 @@
 "use client";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
+import { useAdminTemple } from "@/components/admin/AdminWorkspace";
 
 import {
   useEffect,
@@ -21,6 +23,7 @@ import {
   Plus,
   RefreshCw,
   Search,
+  Trash2,
   Users,
   X,
   XCircle,
@@ -368,7 +371,7 @@ function EventForm({
                 Event Name *
               </label>
 
-              <input
+              <input aria-label="E.g. Maha Aarti"
                 value={name}
                 onChange={(event) =>
                   setName(event.target.value)
@@ -384,7 +387,7 @@ function EventForm({
                 Event Code *
               </label>
 
-              <input
+              <input aria-label="MAHA-AARTI-001"
                 value={code}
                 onChange={(event) =>
                   setCode(event.target.value)
@@ -400,7 +403,7 @@ function EventForm({
                 Festival
               </label>
 
-              <select
+              <select aria-label="Festival Id"
                 value={festivalId}
                 onChange={(event) =>
                   setFestivalId(
@@ -436,7 +439,7 @@ function EventForm({
                 Event Date *
               </label>
 
-              <input
+              <input aria-label="Event Date"
                 type="date"
                 value={eventDate}
                 onChange={(event) =>
@@ -454,7 +457,7 @@ function EventForm({
                   Start Time *
                 </label>
 
-                <input
+                <input aria-label="Start Time"
                   type="time"
                   value={startTime}
                   onChange={(event) =>
@@ -471,7 +474,7 @@ function EventForm({
                   End Time
                 </label>
 
-                <input
+                <input aria-label="End Time"
                   type="time"
                   value={endTime}
                   onChange={(event) =>
@@ -489,7 +492,7 @@ function EventForm({
                 Location
               </label>
 
-              <input
+              <input aria-label="Temple hall"
                 value={location}
                 onChange={(event) =>
                   setLocation(
@@ -507,7 +510,7 @@ function EventForm({
                 Organizer
               </label>
 
-              <input
+              <input aria-label="Temple administration"
                 value={organizer}
                 onChange={(event) =>
                   setOrganizer(
@@ -525,7 +528,7 @@ function EventForm({
                 Maximum Capacity
               </label>
 
-              <input
+              <input aria-label="Optional"
                 type="number"
                 min={1}
                 value={maxCapacity}
@@ -544,7 +547,7 @@ function EventForm({
                 Description
               </label>
 
-              <textarea
+              <textarea aria-label="Describe the event…"
                 value={description}
                 onChange={(event) =>
                   setDescription(
@@ -667,8 +670,7 @@ export default function EventsPage() {
     isLoading: authLoading,
   } = useAuth();
 
-  const [mounted, setMounted] =
-    useState(false);
+  const mounted = !authLoading;
 
   const [temples, setTemples] =
     useState<
@@ -678,8 +680,7 @@ export default function EventsPage() {
       }>
     >([]);
 
-  const [selectedTempleId, setSelectedTempleId] =
-    useState("");
+  const [selectedTempleId, setSelectedTempleId] = useAdminTemple();
 
   const [festivals, setFestivals] =
     useState<Festival[]>([]);
@@ -699,15 +700,19 @@ export default function EventsPage() {
   const [editingEventId, setEditingEventId] =
     useState<string | null>(null);
 
+
   const [selectedEventId, setSelectedEventId] =
     useState<string | null>(null);
 
+  const [deleteEventId, setDeleteEventId] =
+    useState<string | null>(null);
+
+  const [deletePending, setDeletePending] =
+    useState(false);
   const [actionError, setActionError] =
     useState("");
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+
 
   const hasToken =
     mounted &&
@@ -752,6 +757,7 @@ export default function EventsPage() {
     hasToken,
     user?.temple_id,
     selectedTempleId,
+    setSelectedTempleId,
   ]);
 
   useEffect(() => {
@@ -869,6 +875,40 @@ export default function EventsPage() {
     };
   }, [events]);
 
+  const handleDeleteEvent = async (
+    event: EventResponse,
+  ) => {
+    setActionError("");
+    setDeletePending(true);
+
+    try {
+      await apiRequest<null>(
+        `/api/v1/events/${event.id}`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      if (selectedEventId === event.id) {
+        setSelectedEventId(null);
+      }
+
+      if (editingEventId === event.id) {
+        setEditingEventId(null);
+      }
+
+      setDeleteEventId(null);
+      await refetch();
+    } catch (mutationError) {
+      setActionError(
+        mutationError instanceof Error
+          ? mutationError.message
+          : "Unable to delete the event.",
+      );
+    } finally {
+      setDeletePending(false);
+    }
+  };
   const handleStatusChange =
     async (
       event: EventResponse,
@@ -916,7 +956,7 @@ export default function EventsPage() {
             </div>
           </div>
         </div>
-      </main>
+    </main>
     );
   }
 
@@ -994,7 +1034,7 @@ export default function EventsPage() {
             {!user.temple_id &&
               temples.length > 0 && (
                 <div className="relative w-full sm:max-w-xs">
-                  <select
+                  <select aria-label="Selected Temple Id"
                     value={
                       selectedTempleId
                     }
@@ -1092,7 +1132,7 @@ export default function EventsPage() {
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
-              <input
+              <input aria-label="Search event name, code or details…"
                 value={search}
                 onChange={(event) =>
                   setSearch(
@@ -1105,7 +1145,7 @@ export default function EventsPage() {
             </div>
 
             <div className="relative">
-              <select
+              <select aria-label="Status Filter"
                 value={statusFilter}
                 onChange={(event) =>
                   setStatusFilter(
@@ -1131,7 +1171,7 @@ export default function EventsPage() {
             </div>
 
             <div className="relative">
-              <select
+              <select aria-label="Online Filter"
                 value={onlineFilter}
                 onChange={(event) =>
                   setOnlineFilter(
@@ -1358,6 +1398,18 @@ export default function EventsPage() {
                             title="Edit"
                           >
                             <Edit3 className="h-4 w-4" />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActionError("");
+                              setDeleteEventId(event.id);
+                            }}
+                            className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
                       </td>
@@ -1616,6 +1668,20 @@ export default function EventsPage() {
 
                     <button
                       type="button"
+                      onClick={() => {
+                        setActionError("");
+                        setDeleteEventId(selectedEvent.id);
+                      }}
+                      className="rounded-xl border border-red-200 px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50"
+                    >
+                      <span className="inline-flex items-center gap-2">
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={() =>
                         handleStatusChange(
                           selectedEvent,
@@ -1645,7 +1711,16 @@ export default function EventsPage() {
           </div>
         )}
       </div>
+      {deleteEventId && (
+        <ConfirmDialog title="Delete this event?" onClose={() => { if (!deletePending) setDeleteEventId(null); }}>
+            <p className="mt-3 text-sm text-slate-600">This permanently removes the event. You can deactivate it instead to keep its history.</p>
+            {actionError && <p role="alert" className="mt-3 text-red-700">{actionError}</p>}
+            <div className="mt-6 flex justify-end gap-3">
+              <button disabled={deletePending} onClick={() => setDeleteEventId(null)} className="rounded-lg border px-4 py-2">Keep event</button>
+              <button disabled={deletePending} onClick={() => { const record = events.find(e => e.id === deleteEventId); if (record) void handleDeleteEvent(record); }} className="rounded-lg bg-red-700 px-4 py-2 text-white">{deletePending ? "Deleting…" : "Delete event"}</button>
+            </div>
+          </ConfirmDialog>
+      )}
     </main>
   );
 }
-

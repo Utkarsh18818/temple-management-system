@@ -1,4 +1,5 @@
 "use client";
+import { useAdminTemple } from "@/components/admin/AdminWorkspace";
 
 import {
   Check,
@@ -299,7 +300,7 @@ function Field({
         )}
       </label>
 
-      <input
+      <input aria-label="Value"
         type={type}
         min={min}
         step={step}
@@ -556,7 +557,7 @@ function SevaForm({
               Description
             </label>
 
-            <textarea
+            <textarea aria-label="Description"
               value={form.description}
               onChange={(event) =>
                 updateField(
@@ -575,7 +576,7 @@ function SevaForm({
                 Seva type
               </label>
 
-              <select
+              <select aria-label="Seva type"
                 value={form.seva_type}
                 onChange={(event) =>
                   updateField(
@@ -930,8 +931,7 @@ export default function SevasPage() {
 
   const [mounted, setMounted] = useState(false);
 
-  const [selectedTempleId, setSelectedTempleId] =
-    useState("");
+  const [selectedTempleId, setSelectedTempleId] = useAdminTemple();
 
   const [search, setSearch] = useState("");
 
@@ -1132,7 +1132,7 @@ export default function SevasPage() {
               </p>
 
               <div className="mt-2 relative max-w-xl">
-                <select
+                <select aria-label="Effective Temple Id      "
                   value={effectiveTempleId ?? ""}
                   onChange={(event) =>
                     setSelectedTempleId(

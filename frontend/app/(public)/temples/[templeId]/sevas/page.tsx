@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { TempleLink as Link } from "@/features/public/TempleContext";
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import {
@@ -66,7 +66,7 @@ export default function TempleSevasPage() {
 
   return (
     <div className="min-h-screen bg-[#fbf7ef]">
-      <section className="relative overflow-hidden bg-[#102a43] text-white">
+      <section className="relative overflow-hidden bg-[#71333e] text-white">
         <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(circle_at_center,rgba(212,175,55,0.25)_1px,transparent_1px)] [background-size:26px_26px]" />
 
         <div className="absolute -left-24 top-10 h-72 w-72 rounded-full bg-[#d4af37]/10 blur-3xl" />
@@ -127,7 +127,7 @@ export default function TempleSevasPage() {
                   onClick={() => setSelectedType("all")}
                   className={`shrink-0 rounded-full px-4 py-2.5 text-xs font-semibold transition ${
                     selectedType === "all"
-                      ? "bg-[#102a43] text-white"
+                      ? "bg-[#71333e] text-white"
                       : "border border-[#ddd3c7] bg-white text-[#776b63] hover:border-[#d4af37]"
                   }`}
                 >
@@ -141,7 +141,7 @@ export default function TempleSevasPage() {
                     onClick={() => setSelectedType(type)}
                     className={`shrink-0 rounded-full px-4 py-2.5 text-xs font-semibold capitalize transition ${
                       selectedType === type
-                        ? "bg-[#102a43] text-white"
+                        ? "bg-[#71333e] text-white"
                         : "border border-[#ddd3c7] bg-white text-[#776b63] hover:border-[#d4af37]"
                   }`}
                 >
@@ -302,7 +302,7 @@ export default function TempleSevasPage() {
 
                     <Link
                       href={`/temples/${templeId}/sevas/${seva.id}/book`}
-                      className="mt-6 flex h-12 items-center justify-center gap-2 rounded-xl bg-[#102a43] px-5 text-sm font-semibold text-white transition hover:bg-[#183b5c]"
+                      className="mt-6 flex h-12 items-center justify-center gap-2 rounded-xl bg-[#71333e] px-5 text-sm font-semibold text-white transition hover:bg-[#572630]"
                     >
                       Continue to booking
                       <ArrowRight className="h-4 w-4" />

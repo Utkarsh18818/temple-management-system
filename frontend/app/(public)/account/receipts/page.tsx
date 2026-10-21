@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { TempleLink as Link } from "@/features/public/TempleContext";
 import {
   ArrowLeft,
   CalendarDays,
@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 
 import { usePublicAuth } from "@/features/public/PublicAuthContext";
-import { useReceipts } from "@/features/receipts/hooks";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/api/client";
 
 function formatDate(value: string) {
   const date = new Date(value);
@@ -66,13 +67,11 @@ async function openReceiptPdf(receiptId: string) {
       : null;
 
   if (!token) {
-    window.location.href =
-      "/login?redirect=/account/receipts";
-    return;
+    throw new Error("Please sign in again to view your receipt.");
   }
 
   const response = await fetch(
-    `${apiUrl}/api/v1/receipts/${receiptId}/pdf`,
+    `${apiUrl}/api/v1/public/account/receipts/${receiptId}/pdf`,
     {
       method: "GET",
       headers: {
@@ -134,6 +133,7 @@ async function openReceiptPdf(receiptId: string) {
 }
 
 type ReceiptItem = {
+  status?: string;
   id: string;
   donation_id: string | null;
   booking_id: string | null;
@@ -231,12 +231,13 @@ function ReceiptCard({
           </span>
         )}
 
-        {receipt.pdf_path && (
+        {receipt.status === "VOID" && <p className="text-sm font-semibold text-red-700">Void · payment refunded</p>}
+        {receipt.pdf_path && receipt.status !== "VOID" && (
           <button
             type="button"
             onClick={handleViewReceipt}
             disabled={isOpening}
-            className="ml-auto inline-flex items-center gap-2 rounded-full bg-[#102a43] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#183b5c] disabled:cursor-not-allowed disabled:opacity-60"
+            className="ml-auto inline-flex items-center gap-2 rounded-full bg-[#71333e] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#572630] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isOpening ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -277,10 +278,11 @@ export default function ReceiptsPage() {
     isLoading: authLoading,
   } = usePublicAuth();
 
-  const receiptsQuery = useReceipts(
-    {},
-    isAuthenticated && Boolean(devotee),
-  );
+  const receiptsQuery = useQuery({
+    queryKey: ["public", "receipts", devotee?.id],
+    queryFn: () => apiRequest<ReceiptItem[]>("/api/v1/public/account/receipts?limit=100"),
+    enabled: isAuthenticated && Boolean(devotee),
+  });
 
   if (authLoading) {
     return (
@@ -315,7 +317,7 @@ export default function ReceiptsPage() {
 
             <Link
               href="/login?redirect=/account/receipts"
-              className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#102a43] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#183b5c]"
+              className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#71333e] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#572630]"
             >
               Sign In
             </Link>
@@ -329,7 +331,7 @@ export default function ReceiptsPage() {
 
   return (
     <div className="min-h-[calc(100vh-140px)] bg-[#fbf7ef]">
-      <section className="relative overflow-hidden bg-[#102a43] text-white">
+      <section className="relative overflow-hidden bg-[#71333e] text-white">
         <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(circle_at_center,rgba(212,175,55,0.25)_1px,transparent_1px)] [background-size:26px_26px]" />
 
         <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-[#d4af37]/10 blur-3xl" />
@@ -433,7 +435,7 @@ export default function ReceiptsPage() {
                 onClick={() =>
                   receiptsQuery.refetch()
                 }
-                className="mt-6 rounded-full bg-[#102a43] px-6 py-3 text-sm font-semibold text-white"
+                className="mt-6 rounded-full bg-[#71333e] px-6 py-3 text-sm font-semibold text-white"
               >
                 Try again
               </button>
@@ -457,7 +459,7 @@ export default function ReceiptsPage() {
               <div className="mt-7 flex flex-wrap justify-center gap-3">
                 <Link
                   href="/donate"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#102a43] px-6 py-3 text-sm font-semibold text-white"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#71333e] px-6 py-3 text-sm font-semibold text-white"
                 >
                   Make an offering
                   <Heart className="h-4 w-4" />

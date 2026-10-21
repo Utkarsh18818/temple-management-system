@@ -1,4 +1,5 @@
 "use client";
+import { useAdminTemple } from "@/components/admin/AdminWorkspace";
 
 import {
   useEffect,
@@ -307,7 +308,7 @@ function FestivalForm({
                     Festival Name *
                   </label>
 
-                  <input
+                  <input aria-label="Diwali Mahotsav"
                     value={name}
                     onChange={(event) =>
                       setName(
@@ -325,7 +326,7 @@ function FestivalForm({
                     Festival Code *
                   </label>
 
-                  <input
+                  <input aria-label="DIWALI-2026"
                     value={code}
                     onChange={(event) =>
                       setCode(
@@ -343,7 +344,7 @@ function FestivalForm({
                     Deity
                   </label>
 
-                  <input
+                  <input aria-label="Lord Krishna"
                     value={deity}
                     onChange={(event) =>
                       setDeity(
@@ -361,7 +362,7 @@ function FestivalForm({
                     Start Date *
                   </label>
 
-                  <input
+                  <input aria-label="Start Date"
                     type="date"
                     value={startDate}
                     onChange={(event) =>
@@ -378,7 +379,7 @@ function FestivalForm({
                     End Date *
                   </label>
 
-                  <input
+                  <input aria-label="End Date"
                     type="date"
                     value={endDate}
                     onChange={(event) =>
@@ -395,7 +396,7 @@ function FestivalForm({
                     Location
                   </label>
 
-                  <input
+                  <input aria-label="Main Temple Complex"
                     value={location}
                     onChange={(event) =>
                       setLocation(
@@ -413,7 +414,7 @@ function FestivalForm({
                     Description
                   </label>
 
-                  <textarea
+                  <textarea aria-label="Festival details and significance..."
                     value={description}
                     onChange={(event) =>
                       setDescription(
@@ -830,8 +831,7 @@ export default function FestivalsPage() {
     isLoading: authLoading,
   } = useAuth();
 
-  const [selectedTempleId, setSelectedTempleId] =
-    useState("");
+  const [selectedTempleId, setSelectedTempleId] = useAdminTemple();
 
   const [search, setSearch] =
     useState("");
@@ -1080,7 +1080,7 @@ export default function FestivalsPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               {!user.temple_id && (
                 <div className="relative">
-                  <select
+                  <select aria-label="Selected Temple Id"
                     value={
                       selectedTempleId
                     }
@@ -1259,7 +1259,7 @@ export default function FestivalsPage() {
                     Status
                   </label>
 
-                  <select
+                  <select aria-label="Status Filter"
                     value={statusFilter}
                     onChange={(event) =>
                       setStatusFilter(
@@ -1290,7 +1290,7 @@ export default function FestivalsPage() {
                     From
                   </label>
 
-                  <input
+                  <input aria-label="Start Date"
                     type="date"
                     value={startDate}
                     onChange={(event) =>
@@ -1307,7 +1307,7 @@ export default function FestivalsPage() {
                     To
                   </label>
 
-                  <input
+                  <input aria-label="End Date"
                     type="date"
                     value={endDate}
                     onChange={(event) =>
@@ -1457,5 +1457,3 @@ export default function FestivalsPage() {
     </main>
   );
 }
-
-

@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.dependencies import require_super_admin
+from app.core.dependencies import require_super_admin, require_staff
 from app.models import Temple, User
 from app.schemas.temple import (
     TempleCreate,
@@ -71,11 +71,12 @@ def create_temple(
 )
 def list_temples(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_super_admin),
+    current_user: User = Depends(require_staff),
 ):
-    return db.scalars(
-        select(Temple).order_by(Temple.name)
-    ).all()
+    query = select(Temple).order_by(Temple.name)
+    if current_user.temple_id is not None:
+        query = query.where(Temple.id == current_user.temple_id)
+    return db.scalars(query).all()
 
 
 @router.get(
@@ -85,8 +86,10 @@ def list_temples(
 def get_temple(
     temple_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_super_admin),
+    current_user: User = Depends(require_staff),
 ):
+    if current_user.temple_id is not None and current_user.temple_id != temple_id:
+        raise HTTPException(403, "You can only access your assigned temple")
     temple = db.get(Temple, temple_id)
 
     if not temple:

@@ -42,6 +42,7 @@ class PublicDevoteeRegisterRequest(BaseModel):
 
 
 class PublicDevoteeLoginRequest(BaseModel):
+    temple_id: UUID
     identifier: str = Field(min_length=1, max_length=255)
     password: str
 
@@ -162,6 +163,7 @@ def register_public_devotee(
 
     existing_user = db.scalar(
         select(User).where(
+            User.temple_id == payload.temple_id,
             or_(*duplicate_user_conditions),
         )
     )
@@ -295,8 +297,13 @@ def login_public_devotee(
 
     identifier_lower = identifier.lower()
 
+    temple = db.get(Temple, payload.temple_id)
+    if temple is None or not temple.is_active:
+        raise HTTPException(404, "Temple portal not found or inactive")
+
     user = db.scalar(
         select(User).where(
+            User.temple_id == payload.temple_id,
             or_(
                 User.email == identifier_lower,
                 User.phone == identifier,
@@ -310,7 +317,7 @@ def login_public_devotee(
     ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email/phone or password.",
+            detail="Invalid email/phone or password for this temple. Accounts from other temples cannot sign in here.",
         )
 
     if not user.is_active:

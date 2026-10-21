@@ -1,3 +1,4 @@
+import os
 import uuid
 
 from fastapi.testclient import TestClient
@@ -9,7 +10,7 @@ client = TestClient(app)
 
 
 ADMIN_EMAIL = "admin@test.com"
-ADMIN_PASSWORD = "TempleOS-Test@2026"
+ADMIN_PASSWORD = os.environ.get("TEMPLEOS_TEST_ADMIN_PASSWORD", "TempleOS-Test@2026")
 
 TEMPLE_ID = "d90d0a47-9876-4591-9aab-bb95e2ee644b"
 

@@ -175,7 +175,7 @@ def list_festivals(
         ge=0,
     ),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     """
     List festivals with search, date filtering,
@@ -249,7 +249,7 @@ def list_festivals(
 def get_festival(
     festival_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     """
     Get a single festival.

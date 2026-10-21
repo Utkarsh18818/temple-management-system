@@ -1,4 +1,5 @@
 "use client";
+import { useAdminTemple } from "@/components/admin/AdminWorkspace";
 
 import {
   CalendarDays,
@@ -386,7 +387,7 @@ function SlotForm({
                 Date
               </label>
 
-              <input
+              <input aria-label="Slot date"
                 type="date"
                 value={form.slot_date}
                 onChange={(event) =>
@@ -404,7 +405,7 @@ function SlotForm({
                 Capacity
               </label>
 
-              <input
+              <input aria-label="Capacity"
                 type="number"
                 min="1"
                 step="1"
@@ -426,7 +427,7 @@ function SlotForm({
                 Start time
               </label>
 
-              <input
+              <input aria-label="Start time"
                 type="time"
                 value={form.start_time}
                 onChange={(event) =>
@@ -444,7 +445,7 @@ function SlotForm({
                 End time
               </label>
 
-              <input
+              <input aria-label="End time"
                 type="time"
                 value={form.end_time}
                 onChange={(event) =>
@@ -590,7 +591,7 @@ function SlotCard({
           Edit
         </button>
 
-        <select
+        <select aria-label="Status"
           value={slot.status}
           disabled={updating}
           onChange={(event) =>
@@ -621,8 +622,7 @@ export default function SlotsPage() {
   const [mounted, setMounted] =
     useState(false);
 
-  const [selectedTempleId, setSelectedTempleId] =
-    useState("");
+  const [selectedTempleId, setSelectedTempleId] = useAdminTemple();
 
   const [selectedSevaId, setSelectedSevaId] =
     useState("");
@@ -847,7 +847,7 @@ export default function SlotsPage() {
               </label>
 
               <div className="relative">
-                <select
+                <select aria-label="Effective Temple Id"
                   value={
                     effectiveTempleId
                   }
@@ -886,7 +886,7 @@ export default function SlotsPage() {
               </label>
 
               <div className="relative">
-                <select
+                <select aria-label="Effective Seva Id"
                   value={
                     effectiveSevaId
                   }
@@ -931,7 +931,7 @@ export default function SlotsPage() {
                 Date
               </label>
 
-              <input
+              <input aria-label="Slot Date"
                 type="date"
                 value={slotDate}
                 onChange={(event) =>
@@ -948,7 +948,7 @@ export default function SlotsPage() {
                 Status
               </label>
 
-              <select
+              <select aria-label="Status Filter"
                 value={statusFilter}
                 onChange={(event) =>
                   setStatusFilter(

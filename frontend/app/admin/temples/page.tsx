@@ -137,7 +137,7 @@ function Field({
         )}
       </span>
 
-      <input
+      <input aria-label="Value"
         type={type}
         value={value}
         disabled={disabled}
@@ -166,7 +166,7 @@ function TextAreaField({
         {label}
       </span>
 
-      <textarea
+      <textarea aria-label="Enter temple description..."
         value={value}
         rows={4}
         onChange={(event) =>
@@ -518,7 +518,7 @@ export default function TemplesPage() {
             <div className="relative w-full md:max-w-md">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
-              <input
+              <input aria-label="Search by name, code or location..."
                 type="search"
                 value={search}
                 onChange={(event) =>
@@ -530,7 +530,7 @@ export default function TemplesPage() {
             </div>
 
             <div className="relative">
-              <select
+              <select aria-label="Status Filter"
                 value={statusFilter}
                 onChange={(event) =>
                   setStatusFilter(

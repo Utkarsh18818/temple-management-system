@@ -1,3 +1,4 @@
+import os
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -5,7 +6,7 @@ from app.main import app
 client = TestClient(app)
 
 ADMIN_EMAIL = "admin@test.com"
-ADMIN_PASSWORD = "TempleOS-Test@2026"
+ADMIN_PASSWORD = os.environ.get("TEMPLEOS_TEST_ADMIN_PASSWORD", "TempleOS-Test@2026")
 
 
 def get_admin_token():

@@ -19,13 +19,16 @@ from sqlalchemy.orm import Session
 
 from app.core.audit import create_audit_log
 from app.core.database import get_db
-from app.core.dependencies import get_current_user
+from app.services.receipt_pdf import generate_receipt_pdf
+from app.services.receipt_status import annotate_receipts
+from app.core.dependencies import get_current_user, require_staff
 from app.core.numbering import acquire_numbering_lock
 from app.models import (
     Donation,
     Receipt,
     SevaBooking,
     User,
+    Temple,
 )
 from app.schemas.receipt import (
     ReceiptCreate,
@@ -157,7 +160,7 @@ def resolve_receipt_pdf_path(
         / "receipts"
     ).resolve()
 
-    stored_path = Path(pdf_path)
+    stored_path = Path(pdf_path.replace("\\", "/"))
 
     if stored_path.is_absolute():
         candidate = stored_path.resolve()
@@ -189,6 +192,24 @@ def resolve_receipt_pdf_path(
         )
 
     return candidate
+
+
+def ensure_receipt_pdf(receipt: Receipt, db: Session) -> Path:
+    """Rebuild an authorized paid receipt after an ephemeral host restarts."""
+    if receipt.pdf_path:
+        try:
+            return resolve_receipt_pdf_path(receipt.pdf_path)
+        except HTTPException as error:
+            if error.status_code != 404:
+                raise
+    donation = db.get(Donation, receipt.donation_id) if receipt.donation_id else None
+    booking = db.get(SevaBooking, receipt.booking_id) if receipt.booking_id else None
+    if not ((donation and donation.status == "COMPLETED") or (booking and booking.payment_status == "PAID")):
+        raise HTTPException(409, "A successful payment is required")
+    temple = db.get(Temple, receipt.temple_id)
+    receipt.pdf_path = generate_receipt_pdf(receipt, temple.name if temple else "Temple")
+    db.commit()
+    return resolve_receipt_pdf_path(receipt.pdf_path)
 
 
 def generate_receipt_number(
@@ -251,7 +272,7 @@ def create_receipt(
     temple_id: uuid.UUID = Query(...),
     http_request: Request = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     """
     Generate a receipt for a completed payment.
@@ -452,6 +473,8 @@ def create_receipt(
 
         # Generate receipt UUID before creating audit.
         db.flush()
+        temple = db.get(Temple, temple_id)
+        receipt.pdf_path = generate_receipt_pdf(receipt, temple.name if temple else "Temple")
 
         # ----------------------------------------------------
         # Audit: RECEIPT_CREATED
@@ -531,7 +554,7 @@ def list_receipts(
         ge=0,
     ),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     query = select(Receipt)
 
@@ -582,7 +605,7 @@ def list_receipts(
         .limit(limit)
     )
 
-    return db.scalars(query).all()
+    return annotate_receipts(db, db.scalars(query).all())
 
 
 # ============================================================
@@ -596,7 +619,7 @@ def list_receipts(
 def get_receipt(
     receipt_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     receipt = get_receipt_or_404(
         receipt_id,
@@ -608,20 +631,39 @@ def get_receipt(
         current_user,
     )
 
-    return receipt
+    return annotate_receipts(db, [receipt])[0]
 
 
 # ============================================================
 # VIEW RECEIPT PDF
 # ============================================================
 
-@router.get(
-    "/{receipt_id}/pdf",
-)
+@router.post("/{receipt_id}/pdf", response_model=ReceiptResponse)
+def generate_missing_receipt_pdf(receipt_id: uuid.UUID, db: Session = Depends(get_db), current_user: User = Depends(require_staff)):
+    receipt = get_receipt_or_404(receipt_id, db)
+    verify_receipt_access(receipt, current_user)
+    if annotate_receipts(db, [receipt])[0].status == "VOID":
+        raise HTTPException(409, "Refunded receipt is void")
+    donation = db.get(Donation, receipt.donation_id) if receipt.donation_id else None
+    booking = db.get(SevaBooking, receipt.booking_id) if receipt.booking_id else None
+    if (donation and donation.status == "REFUNDED") or (booking and booking.payment_status == "REFUNDED"):
+        raise HTTPException(409, "Refunded receipt is void")
+    if not ((donation and donation.status == "COMPLETED") or (booking and booking.payment_status == "PAID")):
+        raise HTTPException(409, "A successful payment is required")
+    previous_path = receipt.pdf_path
+    ensure_receipt_pdf(receipt, db)
+    if receipt.pdf_path != previous_path:
+        create_audit_log(db, current_user=current_user, action="RECEIPT_PDF_GENERATED", entity_type="Receipt", entity_id=receipt.id, temple_id=receipt.temple_id)
+        db.commit()
+        db.refresh(receipt)
+    return receipt
+
+
+@router.get("/{receipt_id}/pdf")
 def view_receipt_pdf(
     receipt_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     """
     Return the generated receipt PDF.
@@ -639,16 +681,15 @@ def view_receipt_pdf(
         receipt,
         current_user,
     )
+    if annotate_receipts(db, [receipt])[0].status == "VOID":
+        raise HTTPException(409, "This payment was refunded; its original receipt is void")
 
-    if not receipt.pdf_path:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Receipt PDF is not available.",
-        )
+    donation = db.get(Donation, receipt.donation_id) if receipt.donation_id else None
+    booking = db.get(SevaBooking, receipt.booking_id) if receipt.booking_id else None
+    if (donation and donation.status == "REFUNDED") or (booking and booking.payment_status == "REFUNDED"):
+        raise HTTPException(409, "This payment was refunded; the original receipt is void")
 
-    pdf_path = resolve_receipt_pdf_path(
-        receipt.pdf_path
-    )
+    pdf_path = ensure_receipt_pdf(receipt, db)
 
     return FileResponse(
         path=pdf_path,

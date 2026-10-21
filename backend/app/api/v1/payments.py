@@ -1,5 +1,6 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, time, timedelta, timezone
+from zoneinfo import ZoneInfo
 from decimal import Decimal
 from typing import Any
 
@@ -11,25 +12,28 @@ from fastapi import (
     Request,
     status,
 )
-from sqlalchemy import func, or_, select
+from sqlalchemy import case, func, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.audit import create_audit_log
 from app.core.numbering import acquire_numbering_lock
 from app.core.database import get_db
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_staff
 from app.models import (
     Donation,
     Payment,
     SevaBooking,
     User,
+    Temple,
 )
 from app.schemas.payment import (
     PaymentCreate,
     PaymentResponse,
     PaymentUpdate,
 )
+from app.services.booking_lifecycle import release_booking, ensure_booking_payable
+from app.services.receipt_service import create_booking_receipt, create_donation_receipt
 
 
 router = APIRouter(
@@ -253,7 +257,7 @@ def create_payment(
     temple_id: uuid.UUID = Query(...),
     http_request: Request = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     """
     Create a payment.
@@ -341,6 +345,9 @@ def create_payment(
                 ),
             )
 
+        if donation.status == "REFUNDED":
+            raise HTTPException(409, "Create a new donation for a new payment; this donation was refunded")
+
         linked_amount = donation.amount
 
     if request.booking_id is not None:
@@ -363,6 +370,9 @@ def create_payment(
                     "to this temple"
                 ),
             )
+
+        if booking.status not in {"PENDING", "CONFIRMED"}:
+            raise HTTPException(409, "Cannot create a payment for a closed booking")
 
         linked_amount = booking.amount
 
@@ -550,7 +560,7 @@ def list_payments(
         ge=0,
     ),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     query = select(Payment)
 
@@ -615,6 +625,54 @@ def list_payments(
 # ============================================================
 
 
+@router.get("/summary")
+def payment_summary(
+    temple_id: uuid.UUID | None = None,
+    date_from: date | None = None,
+    date_to: date | None = None,
+    currency: str = "INR",
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_staff),
+):
+    if current_user.temple_id is not None:
+        if temple_id and temple_id != current_user.temple_id:
+            raise HTTPException(403, "You can only access your assigned temple")
+        temple_id = current_user.temple_id
+    if temple_id is None:
+        raise HTTPException(400, "Choose a temple")
+    if date_from and date_to and date_from > date_to:
+        raise HTTPException(422, "Start date must be on or before end date")
+    temple = db.get(Temple, temple_id)
+    if temple is None:
+        raise HTTPException(404, "Temple not found")
+    tz = ZoneInfo(temple.timezone or "Asia/Kolkata")
+    received_at = func.coalesce(Payment.paid_at, Payment.created_at)
+    query = select(Payment).where(Payment.temple_id == temple_id, Payment.currency == currency.upper())
+    if date_from:
+        query = query.where(received_at >= datetime.combine(date_from, time.min, tzinfo=tz).astimezone(timezone.utc))
+    if date_to:
+        query = query.where(received_at < datetime.combine(date_to + timedelta(days=1), time.min, tzinfo=tz).astimezone(timezone.utc))
+    # Aggregate in SQL across the whole period, independently of list pagination.
+    source = case((Payment.booking_id.is_not(None), "seva"), else_="donations")
+    rows = db.execute(query.with_only_columns(source.label("source"), Payment.status,
+        func.count(Payment.id), func.coalesce(func.sum(Payment.amount), 0)).group_by(source, Payment.status)).all()
+    result = {"currency": currency.upper(), "seva": {"received": Decimal(0), "refunded": Decimal(0), "pending": Decimal(0)},
+              "donations": {"received": Decimal(0), "refunded": Decimal(0), "pending": Decimal(0)}}
+    for source_name, payment_status, count, amount in rows:
+        if payment_status == "SUCCESS":
+            result[source_name]["received"] += amount
+        elif payment_status == "REFUNDED":
+            result[source_name]["refunded"] += amount
+        elif payment_status == "PENDING":
+            result[source_name]["pending"] += amount
+    for source_name in ("seva", "donations"):
+        # SUCCESS excludes refunded rows; received is money currently retained.
+        result[source_name]["gross"] = result[source_name]["received"] + result[source_name]["refunded"]
+    result["total_received"] = result["seva"]["received"] + result["donations"]["received"]
+    result["total_refunded"] = result["seva"]["refunded"] + result["donations"]["refunded"]
+    return result
+
+
 @router.get(
     "/{payment_id}",
     response_model=PaymentResponse,
@@ -622,7 +680,7 @@ def list_payments(
 def get_payment(
     payment_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     payment = get_payment_or_404(
         payment_id,
@@ -651,7 +709,7 @@ def update_payment(
     request: PaymentUpdate,
     http_request: Request,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     payment = db.scalar(
         select(Payment)
@@ -675,6 +733,8 @@ def update_payment(
     update_data = request.model_dump(
         exclude_unset=True
     )
+    if "paid_at" in update_data:
+        raise HTTPException(422, "Payment timestamps are recorded by the server")
 
     allowed_statuses = {
         "PENDING",
@@ -826,10 +886,7 @@ def update_payment(
             # ----------------------------------------------
 
             if payment.donation_id:
-                donation = db.get(
-                    Donation,
-                    payment.donation_id,
-                )
+                donation = db.scalar(select(Donation).where(Donation.id == payment.donation_id).with_for_update())
 
                 if donation:
                     donation.status = "COMPLETED"
@@ -839,13 +896,11 @@ def update_payment(
             # ----------------------------------------------
 
             if payment.booking_id:
-                booking = db.get(
-                    SevaBooking,
-                    payment.booking_id,
-                )
+                booking = db.scalar(select(SevaBooking).where(SevaBooking.id == payment.booking_id).with_for_update())
 
                 if booking:
-                    booking.status = "CONFIRMED"
+                    ensure_booking_payable(db, booking)
+                    booking.status = "COMPLETED" if booking.status == "COMPLETED" else "CONFIRMED"
                     booking.payment_status = "PAID"
                     booking.confirmed_at = (
                         datetime.now(timezone.utc)
@@ -860,6 +915,11 @@ def update_payment(
             == "FAILED"
         ):
             payment.paid_at = None
+            if payment.booking_id and payment.status != "FAILED":
+                booking = db.scalar(select(SevaBooking).where(SevaBooking.id == payment.booking_id).with_for_update())
+                if booking and booking.payment_status != "PAID":
+                    release_booking(db, booking)
+                    booking.payment_status = "FAILED"
 
         # ----------------------------------------------------
         # REFUNDED
@@ -869,7 +929,15 @@ def update_payment(
             update_data.get("status")
             == "REFUNDED"
         ):
-            payment.paid_at = None
+            if payment.donation_id:
+                donation = db.scalar(select(Donation).where(Donation.id == payment.donation_id).with_for_update())
+                if donation:
+                    donation.status = "REFUNDED"
+            if payment.booking_id:
+                booking = db.scalar(select(SevaBooking).where(SevaBooking.id == payment.booking_id).with_for_update())
+                if booking:
+                    release_booking(db, booking)
+                    booking.payment_status = "REFUNDED"
 
         # ----------------------------------------------------
         # Apply requested fields
@@ -885,6 +953,11 @@ def update_payment(
         db.flush()
 
         new_snapshot = payment_snapshot(payment)
+        if payment.status == "SUCCESS":
+            if payment.donation_id:
+                create_donation_receipt(donation_id=payment.donation_id, temple_id=payment.temple_id, amount=payment.amount, db=db)
+            if payment.booking_id:
+                create_booking_receipt(booking_id=payment.booking_id, temple_id=payment.temple_id, amount=payment.amount, db=db)
 
         # ----------------------------------------------------
         # Audit action

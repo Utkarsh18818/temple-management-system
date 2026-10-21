@@ -12,7 +12,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_staff
 from app.core.numbering import acquire_numbering_lock
 from app.models import (
     Devotee,
@@ -132,7 +132,7 @@ def generate_booking_number(
 def create_booking(
     request: SevaBookingCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     """
     Create a seva booking.
@@ -224,10 +224,7 @@ def create_booking(
     slot = None
 
     if request.slot_id is not None:
-        slot = db.get(
-            SevaSlot,
-            request.slot_id,
-        )
+        slot = db.scalar(select(SevaSlot).where(SevaSlot.id == request.slot_id).with_for_update())
 
         if not slot:
             raise HTTPException(
@@ -356,7 +353,7 @@ def list_bookings(
         ge=0,
     ),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     query = select(SevaBooking)
 
@@ -427,7 +424,7 @@ def list_bookings(
 def get_booking(
     booking_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     booking = get_booking_or_404(
         booking_id,
@@ -450,12 +447,11 @@ def update_booking(
     booking_id: uuid.UUID,
     request: SevaBookingUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
-    booking = get_booking_or_404(
-        booking_id,
-        db,
-    )
+    booking = db.scalar(select(SevaBooking).where(SevaBooking.id == booking_id).with_for_update())
+    if booking is None:
+        raise HTTPException(404, "Booking not found")
 
     verify_booking_access(
         booking,
@@ -472,6 +468,20 @@ def update_booking(
         "CANCELLED",
         "COMPLETED",
     }
+
+    transitions = {
+        "PENDING": {"PENDING", "CONFIRMED", "CANCELLED"},
+        "CONFIRMED": {"CONFIRMED", "COMPLETED", "CANCELLED"},
+        "COMPLETED": {"COMPLETED"},
+        "CANCELLED": {"CANCELLED"},
+    }
+    requested_status = update_data.get("status", booking.status)
+    if requested_status not in transitions.get(booking.status, set()):
+        raise HTTPException(409, "Closed bookings cannot be reopened; create a new booking")
+    if "payment_status" in update_data and update_data["payment_status"] != booking.payment_status:
+        raise HTTPException(409, "Update payment status through Payments so financial records stay reconciled")
+    if requested_status == "CONFIRMED" and booking.payment_status != "PAID":
+        raise HTTPException(409, "Record a successful payment before confirming the booking")
 
     allowed_payment_statuses = {
         "PENDING",
@@ -526,10 +536,7 @@ def update_booking(
         != "CANCELLED"
     ):
         if booking.slot_id is not None:
-            slot = db.get(
-                SevaSlot,
-                booking.slot_id,
-            )
+            slot = db.scalar(select(SevaSlot).where(SevaSlot.id == booking.slot_id).with_for_update())
 
             if slot:
                 slot.booked_count = max(

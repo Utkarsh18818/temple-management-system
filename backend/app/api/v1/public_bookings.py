@@ -1,5 +1,6 @@
 import uuid
-from datetime import date
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
@@ -10,7 +11,7 @@ from app.api.v1.public_auth import get_devotee_for_user
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.core.numbering import acquire_numbering_lock
-from app.models import Seva, SevaBooking, SevaSlot, User
+from app.models import Seva, SevaBooking, SevaSlot, Temple, User
 
 
 router = APIRouter(
@@ -74,7 +75,10 @@ def create_public_booking(
             detail="Devotee account is inactive.",
         )
 
-    if payload.booking_date < date.today():
+    temple = db.get(Temple, devotee.temple_id)
+    if temple is None or not temple.is_active:
+        raise HTTPException(404, "Temple not found or inactive")
+    if payload.booking_date < datetime.now(ZoneInfo(temple.timezone or "Asia/Kolkata")).date():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Booking date cannot be in the past.",

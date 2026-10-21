@@ -15,6 +15,7 @@ type UserResponse =
 export type LoginCredentials = {
   username: string;
   password: string;
+  temple_id?: string;
 };
 
 const ACCESS_TOKEN_KEY =
@@ -30,6 +31,7 @@ export async function login(
         username: credentials.username,
         password: credentials.password,
         grant_type: "password",
+        ...(credentials.temple_id ? { temple_id: credentials.temple_id } : {}),
       },
     );
 

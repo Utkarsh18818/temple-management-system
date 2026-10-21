@@ -1,4 +1,5 @@
 "use client";
+import { useAdminTemple } from "@/components/admin/AdminWorkspace";
 
 import {
   CalendarDays,
@@ -474,7 +475,7 @@ function BookingDetails({
             </p>
 
             <div className="mt-4">
-              <select
+              <select aria-label="Payment status"
                 value={
                   booking.payment_status
                 }
@@ -717,7 +718,7 @@ function BookingForm({
               Devotee
             </label>
 
-            <select
+            <select aria-label="Devotee Id"
               value={devoteeId}
               onChange={(event) =>
                 setDevoteeId(
@@ -752,7 +753,7 @@ function BookingForm({
                 Seva
               </label>
 
-              <select
+              <select aria-label="Seva Id"
                 value={sevaId}
                 onChange={(event) => {
                   setSevaId(
@@ -793,7 +794,7 @@ function BookingForm({
                 Booking date
               </label>
 
-              <input
+              <input aria-label="Booking Date"
                 type="date"
                 value={bookingDate}
                 onChange={(event) => {
@@ -813,7 +814,7 @@ function BookingForm({
               Available slot
             </label>
 
-            <select
+            <select aria-label="Slot Id"
               value={slotId}
               onChange={(event) =>
                 setSlotId(
@@ -872,7 +873,7 @@ function BookingForm({
                 Quantity
               </label>
 
-              <input
+              <input aria-label="Quantity"
                 type="number"
                 min="1"
                 max={
@@ -914,7 +915,7 @@ function BookingForm({
               Special request
             </label>
 
-            <textarea
+            <textarea aria-label="Optional request or note..."
               value={specialRequest}
               onChange={(event) =>
                 setSpecialRequest(
@@ -1049,8 +1050,7 @@ export default function BookingsPage() {
   const [mounted, setMounted] =
     useState(false);
 
-  const [selectedTempleId, setSelectedTempleId] =
-    useState("");
+  const [selectedTempleId, setSelectedTempleId] = useAdminTemple();
 
   const [bookingDate, setBookingDate] =
     useState("");
@@ -1276,7 +1276,7 @@ export default function BookingsPage() {
                       className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]"
                     />
 
-                    <input
+                    <input aria-label="Search booking, devotee or seva ID"
                       value={search}
                       onChange={(event) =>
                         setSearch(
@@ -1295,7 +1295,7 @@ export default function BookingsPage() {
                     Temple
                   </label>
 
-                  <select
+                  <select aria-label="Effective Temple Id"
                     value={
                       effectiveTempleId
                     }
@@ -1329,7 +1329,7 @@ export default function BookingsPage() {
                     Date
                   </label>
 
-                  <input
+                  <input aria-label="Booking Date"
                     type="date"
                     value={bookingDate}
                     onChange={(event) =>
@@ -1347,7 +1347,7 @@ export default function BookingsPage() {
                     Status
                   </label>
 
-                  <select
+                  <select aria-label="Status"
                     value={status}
                     onChange={(event) =>
                       setStatus(
@@ -1382,7 +1382,7 @@ export default function BookingsPage() {
                     Payment:
                   </span>
 
-                  <select
+                  <select aria-label="Payment Status"
                     value={
                       paymentStatus
                     }
@@ -1524,4 +1524,3 @@ export default function BookingsPage() {
     </main>
   );
 }
-

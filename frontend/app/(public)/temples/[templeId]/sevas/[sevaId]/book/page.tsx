@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { TempleLink as Link } from "@/features/public/TempleContext";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -56,7 +56,8 @@ function getDateString(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
-export default function SevaBookingPage() {
+function SevaBookingForm() {
+  const saved = useSearchParams();
   const params = useParams<{
     templeId: string;
     sevaId: string;
@@ -74,13 +75,20 @@ export default function SevaBookingPage() {
   } = usePublicAuth();
 
   const [selectedDate, setSelectedDate] = useState(
-    getDateString(new Date()),
+    () => {
+      const value = saved.get("date");
+      const today = getDateString(new Date());
+      return value && /^\d{4}-\d{2}-\d{2}$/.test(value) && value >= today && !Number.isNaN(Date.parse(value)) && new Date(value).toISOString().slice(0,10) === value ? value : today;
+    },
   );
 
   const [selectedSlotId, setSelectedSlotId] =
-    useState<string>("");
+    useState<string>(saved.get("slot") ?? saved.get("slotId") ?? "");
 
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(() => {
+    const savedQuantity = Number(saved.get("quantity"));
+    return Number.isInteger(savedQuantity) && savedQuantity >= 1 && savedQuantity <= 100 ? savedQuantity : 1;
+  });
 
   const sevaQuery = usePublicSeva(sevaId);
 
@@ -214,7 +222,7 @@ export default function SevaBookingPage() {
 
             <Link
               href={`/temples/${templeId}/sevas`}
-              className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#102a43] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#183b5c]"
+              className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#71333e] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#572630]"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to Sevas
@@ -235,7 +243,7 @@ export default function SevaBookingPage() {
   return (
     <div className="min-h-[calc(100vh-140px)] bg-[#fbf7ef]">
 
-      <section className="relative overflow-hidden bg-[#102a43] text-white">
+      <section className="relative overflow-hidden bg-[#71333e] text-white">
         <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(circle_at_center,rgba(212,175,55,0.25)_1px,transparent_1px)] [background-size:26px_26px]" />
 
         <div className="absolute -left-28 top-0 h-72 w-72 rounded-full bg-[#d4af37]/10 blur-3xl" />
@@ -423,7 +431,7 @@ export default function SevaBookingPage() {
                           }}
                           className={`group rounded-2xl border p-5 text-left transition ${
                             selected
-                              ? "border-[#102a43] bg-[#102a43] text-white shadow-lg shadow-[#102a43]/15"
+                              ? "border-[#71333e] bg-[#71333e] text-white shadow-lg shadow-[#71333e]/15"
                               : "border-[#e7dfd4] bg-white hover:-translate-y-0.5 hover:border-[#d4af37]/70 hover:shadow-md"
                           }`}
                         >
@@ -451,7 +459,7 @@ export default function SevaBookingPage() {
                             </div>
 
                             {selected && (
-                              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#e7c873] text-[#102a43]">
+                              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#e7c873] text-[#71333e]">
                                 <Check className="h-4 w-4" />
                               </div>
                             )}
@@ -581,7 +589,7 @@ export default function SevaBookingPage() {
 
             <div className="overflow-hidden rounded-3xl border border-[#e7dfd4] bg-white shadow-xl shadow-[#6b5848]/10">
 
-              <div className="bg-[#102a43] px-6 py-7 text-white">
+              <div className="bg-[#71333e] px-6 py-7 text-white">
 
                 <div className="flex items-center justify-between">
 
@@ -698,7 +706,7 @@ export default function SevaBookingPage() {
                   type="button"
                   disabled={!canContinue}
                   onClick={continueBooking}
-                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#102a43] px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#102a43]/15 transition hover:bg-[#183b5c] disabled:cursor-not-allowed disabled:opacity-40"
+                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#71333e] px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#71333e]/15 transition hover:bg-[#572630] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isAuthenticated
                     ? "Continue to booking"
@@ -755,4 +763,8 @@ export default function SevaBookingPage() {
       </div>
     </div>
   );
+}
+
+export default function SevaBookingPage() {
+  return <Suspense fallback={<p className="p-8" role="status">Opening seva booking…</p>}><SevaBookingForm/></Suspense>;
 }

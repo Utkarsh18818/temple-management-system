@@ -30,6 +30,7 @@ class UserResponse(BaseModel):
     temple_id: uuid.UUID | None
     role_id: uuid.UUID
     email: str | None
+    role_name: str | None = None
     phone: str | None
     first_name: str
     last_name: str | None

@@ -21,6 +21,7 @@ import {
 } from "@/lib/api/client";
 
 import type { components } from "@/types/api";
+import { useQueryClient } from "@tanstack/react-query";
 
 type UserResponse =
   components["schemas"]["UserResponse"];
@@ -46,6 +47,7 @@ export function AuthProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const queryClient = useQueryClient();
   const [user, setUser] =
     useState<UserResponse | null>(null);
 
@@ -64,11 +66,13 @@ export function AuthProvider({
       try {
         const currentUser =
           await getCurrentUser();
+        if (getAccessToken() !== token) return null;
 
         setUser(currentUser);
 
         return currentUser;
       } catch (error) {
+        if (getAccessToken() !== token) return null;
         /*
          * Only a confirmed 401 means that the JWT
          * is invalid or expired.
@@ -115,6 +119,13 @@ export function AuthProvider({
     };
   }, [refreshUser]);
 
+  useEffect(() => {
+    const changed = () => { void refreshUser(); };
+    window.addEventListener("templeos:session", changed);
+    window.addEventListener("storage", changed);
+    return () => { window.removeEventListener("templeos:session", changed); window.removeEventListener("storage", changed); };
+  }, [refreshUser]);
+
   const login = useCallback(
     async (
       credentials: LoginCredentials,
@@ -123,6 +134,8 @@ export function AuthProvider({
        * loginApi stores the JWT before returning.
        */
       await loginApi(credentials);
+      await queryClient.cancelQueries();
+      queryClient.clear();
 
       /*
        * Immediately resolve the authenticated
@@ -135,13 +148,15 @@ export function AuthProvider({
 
       return currentUser;
     },
-    [],
+    [queryClient],
   );
 
   const logout = useCallback(() => {
+    void queryClient.cancelQueries();
+    queryClient.clear();
     clearAccessToken();
     setUser(null);
-  }, []);
+  }, [queryClient]);
 
   return (
     <AuthContext.Provider

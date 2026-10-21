@@ -11,7 +11,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_staff
 from app.models import Devotee, Temple, User
 from app.schemas.devotee import (
     DevoteeCreate,
@@ -124,7 +124,7 @@ def create_devotee(
     request: DevoteeCreate,
     temple_id: uuid.UUID = Query(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     target_temple_id = get_accessible_temple_id(
         current_user,
@@ -217,7 +217,7 @@ def list_devotees(
         ge=0,
     ),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     target_temple_id = get_accessible_temple_id(
         current_user,
@@ -278,7 +278,7 @@ def list_devotees(
 def get_devotee(
     devotee_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     devotee = db.get(
         Devotee,
@@ -307,7 +307,7 @@ def update_devotee(
     devotee_id: uuid.UUID,
     request: DevoteeUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     devotee = db.get(
         Devotee,
@@ -393,7 +393,7 @@ def update_devotee_status(
     devotee_id: uuid.UUID,
     request: DevoteeStatusUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     devotee = db.get(
         Devotee,

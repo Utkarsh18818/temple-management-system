@@ -16,6 +16,7 @@ export type PublicDevoteeAuthResponse =
   components["schemas"]["PublicDevoteeAuthResponse"];
 
 export type PublicDevoteeLoginRequest = {
+  temple_id: string;
   identifier: string;
   password: string;
 };
@@ -38,8 +39,10 @@ export async function registerPublicDevotee(
 export async function loginPublicDevotee(
   username: string,
   password: string,
+  templeId: string,
 ): Promise<PublicDevoteeAuthResponse> {
   const payload: PublicDevoteeLoginRequest = {
+    temple_id: templeId,
     identifier: username.trim(),
     password,
   };

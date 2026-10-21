@@ -1,4 +1,6 @@
 import logging
+import asyncio
+from contextlib import asynccontextmanager, suppress
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,6 +17,7 @@ from app.api.v1.festivals import router as festival_router
 from app.api.v1.payments import router as payment_router
 from app.api.v1.public import router as public_router
 from app.api.v1.public_auth import router as public_auth_router
+from app.api.v1.public_history import router as public_history_router
 from app.api.v1.public_bookings import router as public_booking_router
 from app.api.v1.public_donations import router as public_donation_router
 from app.api.v1.public_payment_webhook import (
@@ -34,7 +37,18 @@ from app.core.database import engine
 logger = logging.getLogger(__name__)
 
 
+@asynccontextmanager
+async def lifespan(app):
+    from app.services.booking_lifecycle import reservation_worker
+    task = asyncio.create_task(reservation_worker())
+    yield
+    task.cancel()
+    with suppress(asyncio.CancelledError):
+        await task
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title="TempleOS",
     description=(
         "Temple Management System API for managing "
@@ -49,6 +63,7 @@ app = FastAPI(
 # ---------------------------------------------------------
 
 settings.validate_production()
+app.include_router(public_history_router, prefix="/api/v1")
 
 
 # ---------------------------------------------------------

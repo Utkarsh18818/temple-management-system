@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_staff
 from app.models import Seva, SevaSlot, User
 from app.schemas.booking import (
     SevaSlotCreate,
@@ -107,7 +107,7 @@ def create_seva_slot(
     seva_id: uuid.UUID,
     request: SevaSlotCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     seva = get_seva_or_404(
         seva_id,
@@ -190,7 +190,7 @@ def list_seva_slots(
         max_length=30,
     ),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     seva = get_seva_or_404(
         seva_id,
@@ -231,7 +231,7 @@ def list_seva_slots(
 def get_seva_slot(
     slot_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     slot = get_slot_or_404(
         slot_id,
@@ -259,7 +259,7 @@ def update_seva_slot(
     slot_id: uuid.UUID,
     request: SevaSlotUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     slot = get_slot_or_404(
         slot_id,
@@ -377,7 +377,7 @@ def update_seva_slot_status(
     slot_id: uuid.UUID,
     request: SevaSlotStatusUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     slot = get_slot_or_404(
         slot_id,

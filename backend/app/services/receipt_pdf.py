@@ -249,8 +249,4 @@ def generate_receipt_pdf(
 
     pdf.save()
 
-    return str(
-        file_path.relative_to(
-            Path(__file__).resolve().parents[2]
-        )
-    )
+    return file_path.relative_to(Path(__file__).resolve().parents[2]).as_posix()

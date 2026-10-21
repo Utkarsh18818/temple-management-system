@@ -1,3 +1,4 @@
+import os
 import uuid
 from datetime import datetime, timezone
 
@@ -10,7 +11,7 @@ from app.models import Donation
 client = TestClient(app)
 
 ADMIN_EMAIL = "admin@test.com"
-ADMIN_PASSWORD = "TempleOS-Test@2026"
+ADMIN_PASSWORD = os.environ.get("TEMPLEOS_TEST_ADMIN_PASSWORD", "TempleOS-Test@2026")
 
 DEMO_TEMPLE_ID = "d90d0a47-9876-4591-9aab-bb95e2ee644b"
 

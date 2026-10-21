@@ -69,6 +69,7 @@ export function setAccessToken(
     ACCESS_TOKEN_KEY,
     cleanToken,
   );
+  window.dispatchEvent(new Event("templeos:session"));
 }
 
 export function clearAccessToken(): void {
@@ -88,6 +89,7 @@ export function clearAccessToken(): void {
   window.sessionStorage.removeItem(
     ACCESS_TOKEN_KEY,
   );
+  window.dispatchEvent(new Event("templeos:session"));
 }
 
 function getErrorMessage(

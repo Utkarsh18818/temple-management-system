@@ -16,6 +16,7 @@ from app.models.payment import Payment
 from app.models.temple import Temple
 from app.models.user import User
 from app.services.razorpay import razorpay_service
+from app.services.booking_lifecycle import ensure_booking_payable
 from app.services.receipt_service import create_booking_receipt
 
 
@@ -258,7 +259,8 @@ def create_booking_payment_order(
             existing_payment.status == "SUCCESS"
             and existing_payment.gateway_transaction_id
         ):
-            booking.status = "CONFIRMED"
+            ensure_booking_payable(db, booking, existing_payment)
+            booking.status = "COMPLETED" if booking.status == "COMPLETED" else "CONFIRMED"
             booking.payment_status = "PAID"
 
             if not booking.confirmed_at:
@@ -463,7 +465,8 @@ def verify_booking_payment(
         )
 
     if payment.status == "SUCCESS":
-        booking.status = "CONFIRMED"
+        ensure_booking_payable(db, booking, payment)
+        booking.status = "COMPLETED" if booking.status == "COMPLETED" else "CONFIRMED"
         booking.payment_status = "PAID"
 
         if not booking.confirmed_at:
@@ -535,7 +538,8 @@ def verify_booking_payment(
     payment.paid_at = now
     payment.failure_reason = None
 
-    booking.status = "CONFIRMED"
+    ensure_booking_payable(db, booking, payment)
+    booking.status = "COMPLETED" if booking.status == "COMPLETED" else "CONFIRMED"
     booking.payment_status = "PAID"
     booking.confirmed_at = now
 
@@ -635,7 +639,8 @@ def reconcile_booking_payment(
         )
 
     if payment.status == "SUCCESS":
-        booking.status = "CONFIRMED"
+        ensure_booking_payable(db, booking, payment)
+        booking.status = "COMPLETED" if booking.status == "COMPLETED" else "CONFIRMED"
         booking.payment_status = "PAID"
 
         if not booking.confirmed_at:
@@ -750,7 +755,8 @@ def reconcile_booking_payment(
     payment.paid_at = now
     payment.failure_reason = None
 
-    booking.status = "CONFIRMED"
+    ensure_booking_payable(db, booking, payment)
+    booking.status = "COMPLETED" if booking.status == "COMPLETED" else "CONFIRMED"
     booking.payment_status = "PAID"
     booking.confirmed_at = now
 

@@ -1,13 +1,14 @@
 import uuid
 from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_staff
 from app.models import (
     Devotee,
     Donation,
@@ -15,6 +16,7 @@ from app.models import (
     Festival,
     SevaBooking,
     User,
+    Temple,
 )
 from app.schemas.dashboard import (
     DashboardBookingItem,
@@ -78,7 +80,7 @@ def get_dashboard(
         default=None
     ),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     """
     Return the main TempleOS dashboard.
@@ -99,7 +101,11 @@ def get_dashboard(
         current_user,
     )
 
-    today = date.today()
+    temple = db.get(Temple, resolved_temple_id)
+    if temple is None:
+        raise HTTPException(404, "Temple not found")
+    temple_timezone = ZoneInfo(temple.timezone or "Asia/Kolkata")
+    today = datetime.now(temple_timezone).date()
 
     month_start = today.replace(
         day=1
@@ -112,19 +118,19 @@ def get_dashboard(
     month_start_datetime = datetime.combine(
         month_start,
         time.min,
-        tzinfo=timezone.utc,
+        tzinfo=temple_timezone,
     )
 
     tomorrow_datetime = datetime.combine(
         tomorrow,
         time.min,
-        tzinfo=timezone.utc,
+        tzinfo=temple_timezone,
     )
 
     today_datetime = datetime.combine(
         today,
         time.min,
-        tzinfo=timezone.utc,
+        tzinfo=temple_timezone,
     )
 
     # ---------------------------------------------------------

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { TempleLink as Link } from "@/features/public/TempleContext";
 import {
   CalendarDays,
   ChevronRight,

@@ -1,4 +1,5 @@
 "use client";
+import { useAdminTemple } from "@/components/admin/AdminWorkspace";
 
 import {
   CalendarDays,
@@ -328,7 +329,7 @@ function DonationForm({
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]"
               />
 
-              <select
+              <select aria-label="Devotee Id"
                 value={devoteeId}
                 onChange={(event) =>
                   setDevoteeId(
@@ -374,7 +375,7 @@ function DonationForm({
                   ₹
                 </span>
 
-                <input
+                <input aria-label="0.00"
                   type="number"
                   min="1"
                   step="0.01"
@@ -403,7 +404,7 @@ function DonationForm({
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]"
                 />
 
-                <input
+                <input aria-label="Donation Date"
                   type="date"
                   value={donationDate}
                   onChange={(event) =>
@@ -425,7 +426,7 @@ function DonationForm({
                 Donation type
               </label>
 
-              <select
+              <select aria-label="Donation Type"
                 value={donationType}
                 onChange={(event) =>
                   setDonationType(
@@ -461,7 +462,7 @@ function DonationForm({
                 Payment method
               </label>
 
-              <select
+              <select aria-label="Payment Method"
                 value={paymentMethod}
                 onChange={(event) =>
                   setPaymentMethod(
@@ -498,7 +499,7 @@ function DonationForm({
               Notes
             </label>
 
-            <textarea
+            <textarea aria-label="Optional donation note..."
               value={notes}
               onChange={(event) =>
                 setNotes(
@@ -726,7 +727,7 @@ function DonationDetails({
             </h3>
 
             <div className="mt-4">
-              <select
+              <select aria-label="Status"
                 value={
                   donation.status
                 }
@@ -855,8 +856,7 @@ export default function DonationsPage() {
   const [mounted, setMounted] =
     useState(false);
 
-  const [selectedTempleId, setSelectedTempleId] =
-    useState("");
+  const [selectedTempleId, setSelectedTempleId] = useAdminTemple();
 
   const [donationDate, setDonationDate] =
     useState("");
@@ -1134,7 +1134,7 @@ export default function DonationsPage() {
                       className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]"
                     />
 
-                    <input
+                    <input aria-label="Search donation or devotee ID"
                       value={search}
                       onChange={(event) =>
                         setSearch(
@@ -1153,7 +1153,7 @@ export default function DonationsPage() {
                     Temple
                   </label>
 
-                  <select
+                  <select aria-label="Effective Temple Id"
                     value={
                       effectiveTempleId
                     }
@@ -1187,7 +1187,7 @@ export default function DonationsPage() {
                     Date
                   </label>
 
-                  <input
+                  <input aria-label="Donation Date"
                     type="date"
                     value={donationDate}
                     onChange={(event) =>
@@ -1205,7 +1205,7 @@ export default function DonationsPage() {
                     Status
                   </label>
 
-                  <select
+                  <select aria-label="Status"
                     value={status}
                     onChange={(event) =>
                       setStatus(
@@ -1240,7 +1240,7 @@ export default function DonationsPage() {
                     Payment:
                   </span>
 
-                  <select
+                  <select aria-label="Payment Method"
                     value={
                       paymentMethod
                     }
@@ -1387,15 +1387,3 @@ export default function DonationsPage() {
     </main>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-

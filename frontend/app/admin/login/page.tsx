@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useLogin } from "@/features/auth/hooks";
+import { usePublicTemples } from "@/features/public/hooks";
 import {
   loginSchema,
   type LoginFormValues,
@@ -23,6 +24,8 @@ export default function LoginPage() {
 
   const router = useRouter();
   const loginMutation = useLogin();
+  const temples = usePublicTemples({limit:100});
+  const [templeId,setTempleId] = useState("");
 
   const {
     register,
@@ -36,7 +39,7 @@ export default function LoginPage() {
     values: LoginFormValues,
   ) => {
     try {
-      await loginMutation.mutateAsync(values);
+      await loginMutation.mutateAsync({...values,temple_id:templeId || undefined});
 
       router.replace("/admin/dashboard");
     } catch {
@@ -118,6 +121,12 @@ export default function LoginPage() {
               onSubmit={handleSubmit(onSubmit)}
               className="space-y-5"
             >
+              <label className="grid gap-2 text-sm text-[var(--earth-brown)]">Administration environment
+                <select value={templeId} onChange={event=>setTempleId(event.target.value)} className="rounded-xl border border-stone-300 bg-white p-3" aria-label="Administration environment">
+                  <option value="">Platform administration</option>
+                  {temples.data?.map(temple=><option key={temple.id} value={temple.id}>{temple.name}</option>)}
+                </select>
+              </label>
               <div>
                 <label
                   htmlFor="username"

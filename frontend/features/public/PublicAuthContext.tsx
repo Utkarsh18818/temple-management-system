@@ -1,4 +1,6 @@
 "use client";
+import { useQueryClient } from "@tanstack/react-query";
+import { useTemplePortal } from "./TempleContext";
 
 import {
   createContext,
@@ -32,6 +34,7 @@ type PublicAuthContextValue = {
   login: (
     username: string,
     password: string,
+    templeId: string,
   ) => Promise<PublicDevoteeAuthResponse>;
   register: (
     payload: PublicDevoteeRegisterRequest,
@@ -50,6 +53,8 @@ export function PublicAuthProvider({
 }: {
   children: ReactNode;
 }) {
+  const queryClient = useQueryClient();
+  const portal = useTemplePortal();
   const [devotee, setDevotee] =
     useState<PublicDevotee | null>(null);
 
@@ -70,11 +75,17 @@ export function PublicAuthProvider({
       try {
         const currentDevotee =
           await getPublicDevoteeMe();
+        if (getAccessToken() !== token) return null;
 
         setDevotee(currentDevotee);
 
         return currentDevotee;
       } catch (error) {
+        if (getAccessToken() !== token) return null;
+        if (error instanceof ApiError && (error.status === 403 || error.status === 404)) {
+          setDevotee(null);
+          return null;
+        }
         if (
           error instanceof ApiError &&
           error.status === 401
@@ -116,17 +127,28 @@ export function PublicAuthProvider({
     };
   }, [refreshUser]);
 
+  useEffect(() => {
+    const changed = () => { void refreshUser(); };
+    window.addEventListener("templeos:session", changed);
+    window.addEventListener("storage", changed);
+    return () => { window.removeEventListener("templeos:session", changed); window.removeEventListener("storage", changed); };
+  }, [refreshUser]);
+
   const login =
     useCallback(
       async (
         username: string,
         password: string,
+        templeId: string,
       ) => {
         const response =
           await loginPublicDevotee(
             username,
             password,
+            templeId,
           );
+        await queryClient.cancelQueries();
+        queryClient.clear();
 
         setDevotee(
           response.devotee,
@@ -134,7 +156,7 @@ export function PublicAuthProvider({
 
         return response;
       },
-      [],
+      [queryClient],
     );
 
   const register =
@@ -146,6 +168,8 @@ export function PublicAuthProvider({
           await registerPublicDevotee(
             payload,
           );
+        await queryClient.cancelQueries();
+        queryClient.clear();
 
         setDevotee(
           response.devotee,
@@ -153,22 +177,24 @@ export function PublicAuthProvider({
 
         return response;
       },
-      [],
+      [queryClient],
     );
 
   const logout =
     useCallback(() => {
+      void queryClient.cancelQueries();
+      queryClient.clear();
       logoutPublicDevotee();
       setDevotee(null);
-    }, []);
+    }, [queryClient]);
 
   const value =
     useMemo<PublicAuthContextValue>(
       () => ({
-        devotee,
+        devotee: devotee?.temple_id === portal.templeId ? devotee : null,
         isAuthenticated:
-          devotee !== null,
-        isLoading,
+          devotee !== null && devotee.temple_id === portal.templeId,
+        isLoading: isLoading || portal.isLoading,
         login,
         register,
         logout,
@@ -181,6 +207,8 @@ export function PublicAuthProvider({
         register,
         logout,
         refreshUser,
+        portal.templeId,
+        portal.isLoading,
       ],
     );
 

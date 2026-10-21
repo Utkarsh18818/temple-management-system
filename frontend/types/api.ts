@@ -1756,6 +1756,7 @@ export interface components {
         };
         /** ReceiptResponse */
         ReceiptResponse: {
+            status?: string;
             /**
              * Id
              * Format: uuid
@@ -1795,6 +1796,7 @@ export interface components {
              * Format: uuid
              */
             role_id: string;
+            role_name?: string | null;
             /** Email */
             email?: string | null;
             /** Phone */
@@ -2195,6 +2197,7 @@ export interface components {
              * Format: uuid
              */
             role_id: string;
+            role_name?: string | null;
             /** Email */
             email: string | null;
             /** Phone */

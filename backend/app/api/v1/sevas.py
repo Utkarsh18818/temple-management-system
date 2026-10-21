@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_staff
 from app.models import Seva, Temple, User
 from app.schemas.seva import (
     SevaCreate,
@@ -124,7 +124,7 @@ def create_seva(
     request: SevaCreate,
     temple_id: uuid.UUID = Query(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     target_temple_id = get_accessible_temple_id(
         current_user,
@@ -203,7 +203,7 @@ def list_sevas(
         ge=0,
     ),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     target_temple_id = get_accessible_temple_id(
         current_user,
@@ -257,7 +257,7 @@ def list_sevas(
 def get_seva(
     seva_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     seva = db.get(
         Seva,
@@ -286,7 +286,7 @@ def update_seva(
     seva_id: uuid.UUID,
     request: SevaUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     seva = db.get(
         Seva,
@@ -347,7 +347,7 @@ def update_seva_status(
     seva_id: uuid.UUID,
     request: SevaStatusUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     seva = db.get(
         Seva,

@@ -1,4 +1,5 @@
 "use client";
+import { useAdminTemple } from "@/components/admin/AdminWorkspace";
 
 import {
   ChevronLeft,
@@ -575,10 +576,7 @@ export default function DevoteesPage() {
         !userHasTemple,
     );
 
-  const [
-    selectedTempleId,
-    setSelectedTempleId,
-  ] = useState<string>();
+  const [selectedTempleId, setSelectedTempleId] = useAdminTemple();
 
   const [
     searchInput,

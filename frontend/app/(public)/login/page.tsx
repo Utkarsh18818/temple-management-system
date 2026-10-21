@@ -1,17 +1,19 @@
 "use client";
 import { Suspense } from "react";
-import Link from "next/link";
+import { TempleLink as Link } from "@/features/public/TempleContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { Eye, EyeOff, Loader2, LogIn, Mail, Lock } from "lucide-react";
 
 import { ApiError } from "@/lib/api/client";
 import { usePublicAuth } from "@/features/public/PublicAuthContext";
+import { useTemplePortal, portalReturnPath } from "@/features/public/TempleContext";
 
 function PublicLoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = usePublicAuth();
+  const portal = useTemplePortal();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -28,6 +30,7 @@ function PublicLoginPage() {
     event.preventDefault();
 
     setError("");
+    if(!portal.templeId) { setError("Choose an active temple portal first."); return; }
 
     if (!username.trim()) {
       setError("Please enter your email or phone number.");
@@ -45,9 +48,10 @@ function PublicLoginPage() {
       await login(
         username.trim(),
         password,
+        portal.templeId,
       );
 
-      router.replace(redirectTo);
+      router.replace(portalReturnPath(redirectTo, portal.templeId, portal.home));
     } catch (error) {
       if (error instanceof ApiError) {
         setError(error.message);
@@ -71,7 +75,7 @@ function PublicLoginPage() {
             </div>
 
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.25em] text-amber-300">
-              TempleOS
+              {portal.temple?.name ?? "Temple portal"}
             </p>
 
             <h1 className="max-w-md text-4xl font-semibold leading-tight">
@@ -97,7 +101,7 @@ function PublicLoginPage() {
               </div>
 
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">
-                TempleOS
+                {portal.temple?.name ?? "Temple portal"}
               </p>
             </div>
 
@@ -107,9 +111,11 @@ function PublicLoginPage() {
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-stone-500">
-                Sign in to continue your temple journey.
+                Sign in to {portal.temple?.name ?? "this temple"}. Accounts and records are separate for every temple.
               </p>
             </div>
+
+            <p className="mb-5 text-xs text-stone-600">Wrong temple? <Link href="/temples" className="underline">Choose another temple portal</Link></p>
 
             {error && (
               <div
@@ -233,7 +239,7 @@ function PublicLoginPage() {
 
             <div className="mt-8 border-t border-stone-200 pt-6 text-center">
               <p className="text-sm text-stone-500">
-                Don't have a devotee account?
+                Don&apos;t have a devotee account?
               </p>
 
               <Link
@@ -266,4 +272,3 @@ export default function Page() {
     </Suspense>
   );
 }
-

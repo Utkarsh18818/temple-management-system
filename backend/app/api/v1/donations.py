@@ -16,9 +16,9 @@ from sqlalchemy.orm import Session
 
 from app.core.audit import create_audit_log
 from app.core.database import get_db
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_staff
 from app.core.numbering import acquire_numbering_lock
-from app.models import Donation, Devotee, Temple, User
+from app.models import Donation, Devotee, Temple, User, Payment
 from app.schemas.donation import (
     DonationCreate,
     DonationResponse,
@@ -238,7 +238,7 @@ def create_donation(
     temple_id: uuid.UUID = Query(...),
     http_request: Request = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     """
     Create a donation.
@@ -393,7 +393,7 @@ def list_donations(
         ge=0,
     ),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     target_temple_id = get_accessible_temple_id(
         current_user,
@@ -450,7 +450,7 @@ def list_donations(
 def get_donation(
     donation_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     donation = get_donation_or_404(
         donation_id,
@@ -474,7 +474,7 @@ def update_donation(
     request: DonationUpdate,
     http_request: Request = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     donation = get_donation_or_404(
         donation_id,
@@ -493,6 +493,12 @@ def update_donation(
     update_data = request.model_dump(
         exclude_unset=True
     )
+    if "status" in update_data and update_data["status"] != donation.status and (
+        update_data["status"] in {"COMPLETED", "REFUNDED"} or donation.status in {"COMPLETED", "REFUNDED"}
+    ):
+        raise HTTPException(409, "Manage completed payments and refunds through Payments")
+    if "amount" in update_data and update_data["amount"] != donation.amount and db.scalar(select(Payment.id).where(Payment.donation_id == donation.id).limit(1)):
+        raise HTTPException(409, "The amount cannot change after a payment has been recorded")
 
     allowed_statuses = {
         "PENDING",
@@ -579,7 +585,7 @@ def update_donation_status(
     ),
     http_request: Request = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     donation = get_donation_or_404(
         donation_id,
@@ -613,6 +619,8 @@ def update_donation_status(
         donation
     )
 
+    if donation_status != donation.status and (donation_status in {"COMPLETED", "REFUNDED"} or donation.status in {"COMPLETED", "REFUNDED"}):
+        raise HTTPException(409, "Manage completed payments and refunds through Payments")
     donation.status = donation_status
 
     new_values = donation_snapshot(

@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
+from uuid import UUID
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
@@ -53,6 +54,8 @@ def register(
     request: RegisterRequest,
     db: Session = Depends(get_db),
 ):
+    if request.temple_id is None:
+        raise HTTPException(status_code=400, detail="Choose a temple to register")
     # ---------------------------------------------------------
     # Validate email / phone
     # ---------------------------------------------------------
@@ -79,6 +82,7 @@ def register(
 
     existing_user = db.scalar(
         select(User).where(
+            User.temple_id == request.temple_id,
             or_(*duplicate_conditions)
         )
     )
@@ -160,6 +164,7 @@ def login(
     request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
+    temple_id: UUID | None = Form(default=None),
 ):
     # ---------------------------------------------------------
     # Login rate limiting
@@ -170,7 +175,7 @@ def login(
     # ---------------------------------------------------------
     rate_limit_key = _login_rate_limit_key(
         request,
-        form_data.username,
+        f"{temple_id or 'platform'}:{form_data.username}",
     )
 
     if is_login_blocked(rate_limit_key):
@@ -189,7 +194,9 @@ def login(
     # Find user by email or phone
     # ---------------------------------------------------------
     user = db.scalar(
-        select(User).where(
+        select(User).join(Role, User.role_id == Role.id).where(
+            User.temple_id == temple_id if temple_id is not None else User.temple_id.is_(None),
+            Role.name.in_(["SUPER_ADMIN", "TEMPLE_ADMIN", "STAFF"]),
             or_(
                 User.email == form_data.username,
                 User.phone == form_data.username,

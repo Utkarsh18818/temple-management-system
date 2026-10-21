@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, ForeignKey, String
+from sqlalchemy import Boolean, ForeignKey, String, UniqueConstraint, Index, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -10,6 +10,12 @@ from app.models.base import Base, TimestampMixin, UUIDMixin
 
 class User(UUIDMixin, TimestampMixin, Base):
     __tablename__ = "users"
+    __table_args__ = (
+        UniqueConstraint("temple_id", "email", name="uq_users_temple_email"),
+        UniqueConstraint("temple_id", "phone", name="uq_users_temple_phone"),
+        Index("uq_users_platform_email", "email", unique=True, postgresql_where=text("temple_id IS NULL"), sqlite_where=text("temple_id IS NULL")),
+        Index("uq_users_platform_phone", "phone", unique=True, postgresql_where=text("temple_id IS NULL"), sqlite_where=text("temple_id IS NULL")),
+    )
 
     temple_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
@@ -25,12 +31,10 @@ class User(UUIDMixin, TimestampMixin, Base):
 
     email: Mapped[str | None] = mapped_column(
         String(150),
-        unique=True,
     )
 
     phone: Mapped[str | None] = mapped_column(
         String(20),
-        unique=True,
     )
 
     password_hash: Mapped[str] = mapped_column(

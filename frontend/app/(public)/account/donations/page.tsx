@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { TempleLink as Link } from "@/features/public/TempleContext";
 import {
   ArrowLeft,
   ArrowRight,
@@ -86,10 +86,10 @@ export default function DonationsPage() {
   } = usePublicAuth();
 
   const donationsQuery = useQuery({
-    queryKey: ["public", "account", "donations"],
+    queryKey: ["public", "account", "donations", devotee?.id],
     queryFn: () =>
       apiRequest<DonationResponse[]>(
-        "/api/v1/donations?limit=100&offset=0",
+        "/api/v1/public/account/donations?limit=100&offset=0",
       ),
     enabled:
       isAuthenticated && Boolean(devotee),
@@ -129,7 +129,7 @@ export default function DonationsPage() {
 
             <Link
               href="/login?redirect=/account/donations"
-              className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#102a43] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#183b5c]"
+              className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#71333e] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#572630]"
             >
               Sign In
               <ArrowRight className="h-4 w-4" />
@@ -156,7 +156,7 @@ export default function DonationsPage() {
   return (
     <div className="min-h-[calc(100vh-140px)] bg-[#fbf7ef]">
 
-      <section className="relative overflow-hidden bg-[#102a43] text-white">
+      <section className="relative overflow-hidden bg-[#71333e] text-white">
         <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(circle_at_center,rgba(212,175,55,0.25)_1px,transparent_1px)] [background-size:26px_26px]" />
 
         <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-[#d4af37]/10 blur-3xl" />
@@ -284,7 +284,7 @@ export default function DonationsPage() {
                 onClick={() =>
                   donationsQuery.refetch()
                 }
-                className="mt-6 rounded-full bg-[#102a43] px-6 py-3 text-sm font-semibold text-white"
+                className="mt-6 rounded-full bg-[#71333e] px-6 py-3 text-sm font-semibold text-white"
               >
                 Try again
               </button>
@@ -307,7 +307,7 @@ export default function DonationsPage() {
 
               <Link
                 href="/donate"
-                className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#102a43] px-6 py-3 text-sm font-semibold text-white"
+                className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#71333e] px-6 py-3 text-sm font-semibold text-white"
               >
                 Make an offering
                 <ArrowRight className="h-4 w-4" />

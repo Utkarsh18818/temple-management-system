@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.dependencies import (
     get_current_user,
+    require_staff,
     require_temple_admin,
 )
 from app.models import Event, Festival, User
@@ -235,7 +236,7 @@ def list_events(
         ge=0,
     ),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     """
     List events with filtering, search,
@@ -330,7 +331,7 @@ def list_events(
 def get_event(
     event_id: uuid.UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff),
 ):
     event = get_event_or_404(
         event_id,
@@ -430,6 +431,49 @@ def update_event(
         )
 
     return event
+
+
+@router.delete(
+    "/{event_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_event(
+    event_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_temple_admin),
+):
+    """
+    Permanently delete an event.
+
+    Only TEMPLE_ADMIN / SUPER_ADMIN users who have
+    access to the event's temple can perform this action.
+    """
+
+    event = get_event_or_404(
+        event_id,
+        db,
+    )
+
+    verify_temple_access(
+        event.temple_id,
+        current_user,
+    )
+
+    try:
+        db.delete(event)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "This event cannot be deleted because "
+                "other records still reference it."
+            ),
+        )
+
+    return None
 
 
 @router.patch(

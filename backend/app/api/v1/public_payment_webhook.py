@@ -14,6 +14,7 @@ from app.models import (
     Temple,
 )
 from app.services.razorpay import razorpay_service
+from app.services.booking_lifecycle import ensure_booking_payable, release_booking
 from app.services.receipt_service import (
     create_booking_receipt,
     create_donation_receipt,
@@ -45,7 +46,8 @@ def complete_booking_payment(
     if not booking:
         return
 
-    booking.status = "CONFIRMED"
+    ensure_booking_payable(db, booking, payment)
+    booking.status = "COMPLETED" if booking.status == "COMPLETED" else "CONFIRMED"
     booking.payment_status = "PAID"
 
     if booking.confirmed_at is None:
@@ -282,6 +284,11 @@ async def razorpay_webhook(
 
     webhook_event.payment_id = payment.id
 
+    if payment.status == "REFUNDED":
+        webhook_event.status = "IGNORED"
+        db.commit()
+        return {"status": "ignored", "reason": "Payment already refunded"}
+
     if event_type in (
         "payment.captured",
         "order.paid",
@@ -398,7 +405,14 @@ async def razorpay_webhook(
                 "payment_id": str(payment.id),
             }
 
+        if payment.status == "REFUNDED":
+            return {"status": "ignored", "reason": "Payment already refunded"}
         payment.status = "FAILED"
+        if payment.booking_id:
+            booking = db.scalar(select(SevaBooking).where(SevaBooking.id == payment.booking_id).with_for_update())
+            if booking and booking.payment_status != "PAID":
+                release_booking(db, booking)
+                booking.payment_status = "FAILED"
 
         if payment_id:
             payment.gateway_transaction_id = payment_id

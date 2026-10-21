@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import Link from "next/link";
+import { TempleLink as Link } from "@/features/public/TempleContext";
 import { useSearchParams } from "next/navigation";
 
 function DonationSuccessContent() {

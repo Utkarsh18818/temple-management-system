@@ -1,4 +1,5 @@
 "use client";
+import { useAdminTemple } from "@/components/admin/AdminWorkspace";
 
 import {
   Activity,
@@ -346,10 +347,7 @@ export default function AuditPage() {
     setMounted,
   ] = useState(false);
 
-  const [
-    selectedTempleId,
-    setSelectedTempleId,
-  ] = useState("");
+  const [selectedTempleId, setSelectedTempleId] = useAdminTemple();
 
   const [
     action,
@@ -704,7 +702,7 @@ export default function AuditPage() {
               </p>
 
               <div className="relative mt-2 max-w-xl">
-                <select
+                <select aria-label="Effective Temple Id"
                   value={
                     effectiveTempleId
                   }
@@ -798,7 +796,7 @@ export default function AuditPage() {
                   className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]"
                 />
 
-                <input
+                <input aria-label="Search action, entity, user or ID"
                   type="search"
                   value={search}
                   onChange={(
@@ -844,7 +842,7 @@ export default function AuditPage() {
             {filtersOpen && (
               <div className="mt-5 grid gap-4 border-t border-[var(--border)] pt-5 md:grid-cols-2 lg:grid-cols-4">
                 <FilterField label="Action">
-                  <select
+                  <select aria-label="Action"
                     value={action}
                     onChange={(
                       event,
@@ -876,7 +874,7 @@ export default function AuditPage() {
                 </FilterField>
 
                 <FilterField label="Entity type">
-                  <input
+                  <input aria-label="E.g. DONATION"
                     value={
                       entityType
                     }
@@ -895,7 +893,7 @@ export default function AuditPage() {
                 </FilterField>
 
                 <FilterField label="Entity ID">
-                  <input
+                  <input aria-label="UUID"
                     value={
                       entityId
                     }
@@ -914,7 +912,7 @@ export default function AuditPage() {
                 </FilterField>
 
                 <FilterField label="User ID">
-                  <input
+                  <input aria-label="UUID"
                     value={
                       userId
                     }
