@@ -266,3 +266,17 @@ def test_same_email_has_separate_accounts_and_passwords_per_temple(world, monkey
 def test_public_account_cannot_sign_into_staff_environment(world):
     response=world["client"].post("/api/v1/auth/login",data={"username":world["users"]["VOLUNTEER"].email,"password":"unused","temple_id":str(world["temple"].id)})
     assert response.status_code == 401
+
+
+def test_public_registration_and_login_with_real_password_hashing(world):
+    client = world["client"]
+    payload = {"temple_id": str(world["temple"].id), "email": "real-hash@example.com",
+               "first_name": "Hash regression", "password": "Isolated-Regression@2026"}
+    registered = client.post("/api/v1/public/auth/register", json=payload)
+    assert registered.status_code == 201, registered.text
+    login = {"temple_id": payload["temple_id"], "identifier": payload["email"], "password": payload["password"]}
+    signed_in = client.post("/api/v1/public/auth/login", json=login)
+    assert signed_in.status_code == 200, signed_in.text
+    assert signed_in.json()["devotee"]["id"] == registered.json()["devotee"]["id"]
+    login["password"] = "incorrect-password"
+    assert client.post("/api/v1/public/auth/login", json=login).status_code == 401
