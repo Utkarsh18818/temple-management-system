@@ -29,3 +29,13 @@ Receipt PDFs use portable relative paths. Authorized paid receipts are rebuilt o
 Razorpay remains in test mode; deployment does not activate real payment collection. Provider webhook delivery needs the Razorpay dashboard webhook to target the deployed `/api/v1/public/payments/webhook` endpoint with the configured secret. No provider webhook configuration was changed during deployment.
 
 Free services sleep when inactive, so the first request can take 50 seconds or more. Background reservation expiry resumes when the backend runs again. An always-running paid service is needed for uninterrupted background processing.
+
+## Verified deployment — 22 October 2026
+
+- Frontend deployment `dep-dbcir0a9lscs73e1phbg` succeeded from `6652bd5`.
+- Backend deployment `dep-dbcis96q1p3s73c8afo0` succeeded from `8f48daf`, including the bcrypt compatibility fix. Subsequent source commits add documentation and regression coverage only.
+- Public API health returned `healthy` with the database `connected`. CORS preflight allowed the deployed frontend origin.
+- Live SRMS devotee sign-in succeeded in the browser. Personal booking history, platform admin sign-in, SRMS payment income summary and staff receipt access passed direct API checks.
+- The deployed homepage displayed the real mandir images, current Bareilly Panchang, sevas and events. No browser console errors were reported during this check.
+- 33 isolated backend checks passed, including actual password registration/verification and PDF rebuilding after file loss. Frontend production build succeeded on Render.
+- No payment, refund, booking creation, account reset or account removal was performed during deployment verification.
