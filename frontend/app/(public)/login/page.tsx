@@ -8,12 +8,14 @@ import { Eye, EyeOff, Loader2, LogIn, Mail, Lock } from "lucide-react";
 import { ApiError } from "@/lib/api/client";
 import { usePublicAuth } from "@/features/public/PublicAuthContext";
 import { useTemplePortal, portalReturnPath } from "@/features/public/TempleContext";
+import { usePublicTemples } from "@/features/public/hooks";
 
 function PublicLoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = usePublicAuth();
   const portal = useTemplePortal();
+  const { data: temples } = usePublicTemples({ limit: 100 });
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -115,7 +117,23 @@ function PublicLoginPage() {
               </p>
             </div>
 
-            <p className="mb-5 text-xs text-stone-600">Wrong temple? <Link href="/temples" className="underline">Choose another temple portal</Link></p>
+            <div className="mb-6">
+              <label htmlFor="login-temple" className="mb-2 block text-sm font-medium text-stone-700">
+                Choose your temple portal
+              </label>
+              <select id="login-temple" value={portal.templeId} disabled={isSubmitting}
+                onChange={event => {
+                  setUsername("");
+                  setPassword("");
+                  setShowPassword(false);
+                  setError("");
+                  router.replace(`/login?temple_id=${encodeURIComponent(event.target.value)}`);
+                }}
+                className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-900 outline-none focus:border-stone-700 focus:ring-2 focus:ring-stone-200">
+                {temples?.map(temple => <option key={temple.id} value={temple.id}>{temple.name}{temple.city ? ` · ${temple.city}` : ""}</option>)}
+              </select>
+              <p className="mt-2 text-xs leading-5 text-stone-500">Use the account registered with your selected temple.</p>
+            </div>
 
             {error && (
               <div

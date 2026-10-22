@@ -12,11 +12,11 @@ import {
   HandHeart,
   Heart,
   MapPin,
-  Sparkles,
 } from "lucide-react";
 import { mandir, isMandirTemple } from "@/config/mandir";
 import { Lotus } from "@/components/public/MandirMark";
 import { Panchang } from "@/components/public/Panchang";
+import { MandirGallery } from "@/components/public/MandirGallery";
 import {
   usePublicEvents,
   usePublicSevas,
@@ -205,55 +205,7 @@ export default function PublicHomePage() {
 
       <Panchang />
 
-      <section id="our-mandir" className="mandir-story mandir-container">
-        <div className="mandir-story-images">
-          <div className="mandir-story-photo">
-            <Image
-              src={mandir.images.darshan}
-              alt="Radha Krishna adorned with flowers as devotees offer prayers at SRMS"
-              fill
-              sizes="(max-width: 767px) 90vw, 45vw"
-              className="mandir-photo"
-            />
-          </div>
-          <div className="mandir-story-caption">
-            <Lotus />
-            <span lang="hi">श्रद्धा, भक्ति और सेवा</span>
-            <small>FAITH, DEVOTION & SERVICE</small>
-          </div>
-        </div>
-        <div className="mandir-story-copy">
-          <span className="mandir-overline">OUR MANDIR, OUR COMMUNITY</span>
-          <h2>
-            A sanctuary of faith.
-            <br />A home for <em>every heart.</em>
-          </h2>
-          <p>
-            Within the campus of Shri Ram Murti Smarak College of Engineering &
-            Technology, the Radha Krishna Mandir offers a quiet space to pause,
-            pray, and reconnect.
-          </p>
-          <p>
-            Here, the rhythm of campus life meets the timeless spirit of bhakti.
-            Students, faculty, and devotees come together in prayer and
-            celebration, finding a sense of belonging beyond the everyday.
-          </p>
-          <div className="mandir-story-values">
-            <span>
-              <Flower2 size={17} /> Bhakti
-            </span>
-            <span>
-              <HandHeart size={17} /> Seva
-            </span>
-            <span>
-              <Sparkles size={17} /> Togetherness
-            </span>
-          </div>
-          <a href="#visit" className="mandir-text-link">
-            Come experience the mandir <ArrowRight size={16} />
-          </a>
-        </div>
-      </section>
+      <MandirGallery />
 
       <section className="mandir-offerings-section">
         <div className="mandir-container">

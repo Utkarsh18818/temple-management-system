@@ -673,6 +673,85 @@
   font-size: 12px;
   color: var(--mandir-muted);
 }
+.mandir-event-gallery {
+  display: grid;
+  grid-template-columns: 1.12fr 1fr;
+  align-items: center;
+  gap: clamp(32px, 6vw, 90px);
+  padding-block: 80px;
+  scroll-margin-top: 110px;
+}
+.mandir-gallery-stage { min-width: 0; }
+.mandir-gallery-frame {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 3px 100px 3px 3px;
+  background: #e9dfd0;
+  isolation: isolate;
+}
+.mandir-gallery-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 800ms ease;
+}
+.mandir-gallery-slide.is-active { opacity: 1; z-index: 1; }
+.mandir-gallery-slide img { transition: transform 5s linear; transform: scale(1); }
+.mandir-gallery-slide.is-active img { transform: scale(1.035); }
+.mandir-gallery-photo-label {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 46px 24px 22px;
+  color: #fff9ed;
+  background: linear-gradient(transparent, #241b13b8);
+  font-size: 9px;
+  letter-spacing: .13em;
+}
+.mandir-gallery-stage-foot {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 16px;
+  color: var(--mandir-muted);
+  font-size: 9px;
+  letter-spacing: .12em;
+}
+.mandir-gallery-stage-foot > span:last-child { color: var(--mandir-wine); font-variant-numeric: tabular-nums; }
+.mandir-gallery-copy { min-width: 0; }
+.mandir-gallery-copy h2 { display: flex; align-items: baseline; flex-wrap: wrap; gap: 22px; margin: 12px 0 20px; }
+.mandir-gallery-copy h2 > span { font-family: var(--font-devanagari), serif; font-size: 23px; color: var(--mandir-gold); font-weight: 400; }
+.mandir-gallery-intro { font-size: 13px; color: var(--mandir-muted); max-width: 420px; }
+.mandir-gallery-caption { border-top: 1px solid var(--mandir-line); margin-top: 25px; padding-top: 23px; min-height: 133px; }
+.mandir-gallery-caption h3 { color: var(--mandir-wine); font-size: clamp(23px, 2.1vw, 30px); line-height: 1.25; margin-bottom: 10px; }
+.mandir-gallery-caption p { font-size: 12px; color: var(--mandir-muted); max-width: 420px; }
+.mandir-gallery-thumbnails { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 7px; margin: 22px 0; }
+.mandir-gallery-thumbnails button { position: relative; aspect-ratio: 1; padding: 0; border: 2px solid transparent; border-radius: 3px; overflow: hidden; opacity: .58; transition: opacity 200ms, border-color 200ms; }
+.mandir-gallery-thumbnails button img { object-fit: cover; }
+.mandir-gallery-thumbnails button.is-active { opacity: 1; border-color: var(--mandir-wine); }
+.mandir-gallery-thumbnails button:hover { opacity: 1; }
+.mandir-gallery-controls { display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--mandir-line); padding-top: 18px; }
+.mandir-gallery-arrows { display: flex; gap: 8px; }
+.mandir-gallery-controls button { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--mandir-line); border-radius: 50%; color: var(--mandir-wine); background: transparent; cursor: pointer; transition: background 200ms; }
+.mandir-gallery-controls button:hover { background: #eee4d6; }
+.mandir-gallery-play-label { color: var(--mandir-muted); font-size: 10px; margin-left: auto; }
+@media (max-width: 767px) {
+  .mandir-event-gallery { grid-template-columns: 1fr; gap: 28px; padding-block: 45px; }
+  .mandir-gallery-frame { aspect-ratio: 3 / 2; border-top-right-radius: 65px; }
+  .mandir-gallery-copy h2 { margin-bottom: 14px; }
+  .mandir-gallery-caption { min-height: 120px; }
+  .mandir-gallery-thumbnails { gap: 5px; }
+  .mandir-gallery-photo-label { padding: 36px 16px 16px; font-size: 8px; }
+  .mandir-gallery-controls { gap: 8px; }
+  .mandir-gallery-controls button { width: 36px; height: 36px; }
+  .mandir-gallery-play-label { font-size: 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mandir-gallery-slide, .mandir-gallery-slide img { transition: none; transform: none !important; }
+}
 .mandir-story {
   display: grid;
   grid-template-columns: 1fr 1fr;
