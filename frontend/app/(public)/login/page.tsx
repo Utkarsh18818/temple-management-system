@@ -130,6 +130,7 @@ function PublicLoginPage() {
                   router.replace(`/login?temple_id=${encodeURIComponent(event.target.value)}`);
                 }}
                 className="w-full rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm text-stone-900 outline-none focus:border-stone-700 focus:ring-2 focus:ring-stone-200">
+                {(!temples?.length && portal.temple) && <option value={portal.templeId}>{portal.temple.name}</option>}
                 {temples?.map(temple => <option key={temple.id} value={temple.id}>{temple.name}{temple.city ? ` · ${temple.city}` : ""}</option>)}
               </select>
               <p className="mt-2 text-xs leading-5 text-stone-500">Use the account registered with your selected temple.</p>

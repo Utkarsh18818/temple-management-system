@@ -195,8 +195,9 @@ export async function apiRequest<T>(
     );
   }
 
-  const token =
-    getAccessToken();
+  const publicCatalog = (!options.method || options.method === "GET") &&
+    /^\/api\/v1\/public\/(?:temples|sevas)(?:\/|\?|$)/.test(path);
+  const token = publicCatalog ? null : getAccessToken();
 
   if (token) {
     headers.set(

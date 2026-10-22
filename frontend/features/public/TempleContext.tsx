@@ -2,28 +2,38 @@
 
 import NextLink from "next/link";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, type ComponentProps } from "react";
+import { createContext, Suspense, useContext, useEffect, useState, type ComponentProps } from "react";
 import { usePublicTemples } from "./hooks";
 import { useAuth } from "@/lib/auth/auth-context";
-import { isMandirTemple } from "@/config/mandir";
+import { isMandirTemple, primaryTempleIdentity } from "@/config/mandir";
 
-type Temple = NonNullable<ReturnType<typeof usePublicTemples>["data"]>[number];
+type Temple = Pick<NonNullable<ReturnType<typeof usePublicTemples>["data"]>[number], "id" | "name" | "code" | "address" | "city" | "state">;
 type Portal = { templeId: string; temple?: Temple; isPrimary: boolean; isLoading: boolean; home: string; href: (path: string) => string };
 const PortalContext = createContext<Portal>({templeId:"",isPrimary:true,isLoading:true,home:"/",href:path=>path});
 export const useTemplePortal = () => useContext(PortalContext);
 
+function PortalQuery({ onChange }: { onChange: (query: string) => void }) {
+  const params = useSearchParams();
+  const query = params.toString();
+  useEffect(() => onChange(query), [query, onChange]);
+  return null;
+}
+
 export function PublicTempleProvider({children}:{children:React.ReactNode}) {
   const pathname = usePathname();
   const router = useRouter();
-  const params = useSearchParams();
+  const [query, setQuery] = useState<string | null>(null);
+  const params = new URLSearchParams(query ?? "");
   const {user} = useAuth();
   const temples = usePublicTemples({limit:100});
   const fromRoute = /^\/temples\/([0-9a-f-]{36})(?:\/|$)/i.exec(pathname)?.[1];
   const redirect = params.get("redirect") ?? "";
   const fromRedirect = /^\/temples\/([0-9a-f-]{36})(?:\/|$)/i.exec(redirect)?.[1];
-  const primary = temples.data?.find(isMandirTemple);
+  const primary = temples.data?.find(isMandirTemple) ?? primaryTempleIdentity;
   const requestedId = fromRoute ?? params.get("temple_id") ?? fromRedirect ?? (pathname.startsWith("/account") ? user?.temple_id : undefined);
-  const temple = requestedId ? temples.data?.find(t=>t.id===requestedId) : primary;
+  const temple = requestedId
+    ? temples.data?.find(t=>t.id===requestedId) ?? (requestedId === primary.id ? primary : undefined)
+    : primary;
   const templeId = temple?.id ?? "";
   const isPrimary = Boolean(temple && isMandirTemple(temple));
   const home = isPrimary ? "/" : templeId ? `/temples/${templeId}` : "/temples";
@@ -31,7 +41,6 @@ export function PublicTempleProvider({children}:{children:React.ReactNode}) {
     if(temple) document.title = `${temple.name} | Temple portal`;
     if(pathname === "/" && requestedId && temple && !isPrimary) router.replace(home);
   },[temple,pathname,requestedId,isPrimary,home,router]);
-  if(pathname === "/" && requestedId && temple && !isPrimary) return <p className="p-10" role="status">Opening {temple.name}…</p>;
   const href = (path:string) => {
     if(!path.startsWith("/") || path.startsWith("//") || !templeId) return path;
     const url = new URL(path,"http://portal.local");
@@ -39,10 +48,19 @@ export function PublicTempleProvider({children}:{children:React.ReactNode}) {
     if(!url.pathname.startsWith("/temples/") && !url.pathname.startsWith("/admin")) url.searchParams.set("temple_id",templeId);
     return url.pathname + url.search + url.hash;
   };
-  if(requestedId && !temples.isPending && !temples.isError && !temple) return <main className="p-10"><h1>Temple portal not found</h1><NextLink href="/temples">Choose a temple</NextLink></main>;
-  if(temples.isError) return <main className="p-10"><h1>Unable to load this temple</h1><button onClick={()=>temples.refetch()}>Try again</button></main>;
-  if(temples.isPending) return <p className="p-10" role="status">Opening temple portal…</p>;
-  return <PortalContext.Provider value={{templeId,temple,isPrimary,isLoading:temples.isPending,home,href}}>{children}</PortalContext.Provider>;
+  let content = <PortalContext.Provider value={{templeId,temple,isPrimary,isLoading:!temple,home,href}}>{children}</PortalContext.Provider>;
+  if(pathname !== "/" && !fromRoute && query === null) {
+    content = <p className="p-10" role="status">Opening temple portal…</p>;
+  } else if(pathname === "/" && requestedId && temple && !isPrimary) {
+    content = <p className="p-10" role="status">Opening {temple.name}…</p>;
+  } else if(!temple && temples.isError) {
+    content = <main className="p-10"><h1>Unable to load this temple</h1><button onClick={()=>temples.refetch()}>Try again</button></main>;
+  } else if(requestedId && !temples.isPending && !temple) {
+    content = <main className="p-10"><h1>Temple portal not found</h1><NextLink href="/temples">Choose a temple</NextLink></main>;
+  } else if(!temple) {
+    content = <p className="p-10" role="status">Opening temple portal…</p>;
+  }
+  return <><Suspense fallback={null}><PortalQuery onChange={setQuery}/></Suspense>{content}</>;
 }
 
 export function TempleLink({href,...props}:ComponentProps<typeof NextLink>) {

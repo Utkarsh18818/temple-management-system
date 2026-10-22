@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Pause, Play } from "lucide-react";
+import { mandir } from "@/config/mandir";
 
 const INTERVAL_MS = 3000;
 const photos = [
@@ -13,24 +14,37 @@ const photos = [
   { title: "Gathered in the spirit of seva.", description: "Members of the SRMS community come together at the mandir for the festival of lamps.", alt: "The SRMS community gathering outside the mandir behind a row of diyas" },
   { title: "A moment before the divine.", description: "A glimpse inside the mandir, with Radha Krishna adorned in the decorated shrine.", alt: "Radha Krishna shrine inside the SRMS mandir during Deepdan Mahotsav" },
   { title: "An evening shared in faith.", description: "Devotees gather in the mandir gardens as festive lights brighten the evening.", alt: "Devotees in the SRMS mandir garden with colourful evening lights" },
-].map((photo, index) => ({ ...photo, src: `/images/gallery-deepdan-${index + 1}.jpg` }));
+].map((photo, index) => ({ ...photo,
+  src: index === 0 ? mandir.images.entrance : `/images/gallery-deepdan-${index + 1}.webp`,
+  thumbnail: `/images/gallery-thumb-${index + 1}.webp`,
+}));
 
 export function MandirGallery() {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [inView, setInView] = useState(false);
+  const section = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    if (paused) return;
+    const element = section.current;
+    if (!element) return;
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { rootMargin: "250px" });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (paused || !inView) return;
     const timer = window.setTimeout(() => setActive(index => (index + 1) % photos.length), INTERVAL_MS);
     return () => window.clearTimeout(timer);
-  }, [active, paused]);
+  }, [active, paused, inView]);
 
   function select(index: number) {
     setActive((index + photos.length) % photos.length);
   }
 
   return (
-    <section id="our-mandir" className="mandir-event-gallery mandir-container" aria-labelledby="mandir-gallery-heading"
+    <section ref={section} id="our-mandir" className="mandir-event-gallery mandir-container" aria-labelledby="mandir-gallery-heading"
       aria-roledescription="carousel">
       <header className="mandir-gallery-heading">
         <span className="mandir-overline">OUR MANDIR, THROUGH THE LENS</span>
@@ -42,8 +56,9 @@ export function MandirGallery() {
           {photos.map((photo, index) => (
             <div className={`mandir-gallery-slide${active === index ? " is-active" : ""}`} key={photo.src}
               aria-hidden={active !== index}>
-              <Image src={photo.src} alt={active === index ? photo.alt : ""} fill
-                sizes="(max-width: 767px) 92vw, (max-width: 1050px) 88vw, 900px" loading="eager" className="mandir-photo" />
+              {(index === active || (inView && (index === (active + 1) % photos.length || index === (active + photos.length - 1) % photos.length))) &&
+                <Image unoptimized src={photo.src} alt={active === index ? photo.alt : ""} fill
+                  sizes="(max-width: 767px) 92vw, (max-width: 1050px) 88vw, 900px" className="mandir-photo" />}
             </div>
           ))}
           <div className="mandir-gallery-photo-label"><span>DEEPDAN MAHOTSAV</span><span>SRMS CET · 2022</span></div>
@@ -60,7 +75,7 @@ export function MandirGallery() {
           {photos.map((photo, index) => (
             <button type="button" key={photo.src} onClick={() => select(index)} aria-label={`Show photo ${index + 1}: ${photo.title}`}
               aria-pressed={active === index} className={active === index ? "is-active" : ""}>
-              <Image src={photo.src} alt="" fill sizes="70px" />
+              <Image unoptimized src={photo.thumbnail} alt="" fill sizes="70px" />
             </button>
           ))}
         </div>

@@ -13,7 +13,8 @@ import {
   Heart,
   MapPin,
 } from "lucide-react";
-import { mandir, isMandirTemple } from "@/config/mandir";
+import { mandir } from "@/config/mandir";
+import { useTemplePortal } from "@/features/public/TempleContext";
 import { Lotus } from "@/components/public/MandirMark";
 import { Panchang } from "@/components/public/Panchang";
 import { MandirGallery } from "@/components/public/MandirGallery";
@@ -73,10 +74,10 @@ const memories = [
   },
 ];
 export default function PublicHomePage() {
-  const { data: temples, isError: templeError } = usePublicTemples({
+  const { isError: templeError } = usePublicTemples({
     limit: 100,
   });
-  const temple = temples?.find(isMandirTemple);
+  const { temple } = useTemplePortal();
   const { data: sevas } = usePublicSevas({
     templeId: temple?.id ?? "",
     limit: 3,
@@ -136,7 +137,7 @@ export default function PublicHomePage() {
           <div className="mandir-hero-visual">
             <div className="mandir-arch-outline" />
             <div className="mandir-hero-photo">
-              <Image
+              <Image unoptimized
                 src={mandir.images.entrance}
                 alt="The real Radha Krishna Mandir entrance at SRMS, with marigold decorations, diyas, and a garden walkway"
                 fill
@@ -312,7 +313,7 @@ export default function PublicHomePage() {
           {memories.map((memory) => (
             <figure key={memory.title}>
               <div>
-                <Image
+                <Image unoptimized
                   src={memory.image}
                   alt={memory.alt}
                   fill

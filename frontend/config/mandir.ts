@@ -17,11 +17,22 @@ export const mandir = {
   photoSource:
     "https://www.srms.ac.in/deepdan-mahotsav-at-srms-captivated-realm-of-devotion/",
   images: {
-    entrance: "/images/Deep-Ekadashi-1.jpg",
-    darshan: "/images/srms-deepdan.jpg",
-    community: "/images/Deep-Ekadashi-12.jpg",
-    celebration: "/images/srms-janmashtami.jpg",
+    entrance: "/images/mandir-entrance.webp",
+    darshan: "/images/mandir-darshan.webp",
+    community: "/images/mandir-community.webp",
+    celebration: "/images/mandir-janmashtami.webp",
   },
+};
+
+// Public branding can render before the API wakes up. Booking availability and
+// account ownership are still checked against the backend, never this identity.
+export const primaryTempleIdentity = {
+  id: process.env.NEXT_PUBLIC_MANDIR_ID || "5591a722-1d70-4213-b4db-d2d30d4fe1e5",
+  name: "Shri Radha Krishna Mandir · SRMS CET",
+  code: "SRMS-RADHA-KRISHNA",
+  address: mandir.address,
+  city: "Bareilly",
+  state: "Uttar Pradesh",
 };
 
 /** Never silently attach this mandir's identity to demo or tenant-test data. */

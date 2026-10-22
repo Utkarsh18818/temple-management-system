@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   CalendarDays,
@@ -33,14 +33,15 @@ function time(value: string | null) {
       }).format(new Date(value))
     : "Unavailable";
 }
+function subscribeDay(onChange: () => void) {
+  const timer = window.setInterval(onChange, 60_000);
+  return () => window.clearInterval(timer);
+}
 export function Panchang() {
-  const [date, setDate] = useState(() => dateKey());
+  const today = useSyncExternalStore(subscribeDay, dateKey, () => "");
+  const [chosenDate, setDate] = useState<string | null>(null);
   const [followToday, setFollowToday] = useState(true);
-  useEffect(() => {
-    if (!followToday) return;
-    const timer = setInterval(() => setDate(dateKey()), 60_000);
-    return () => clearInterval(timer);
-  }, [followToday]);
+  const date = followToday ? today : chosenDate ?? today;
   const { data, isPending, isError, refetch } = useQuery<DailyPanchang>({
     queryKey: ["mandir-panchang", date],
     queryFn: async ({ signal }) => {
@@ -52,6 +53,7 @@ export function Panchang() {
       return response.json();
     },
     staleTime: 60_000,
+    enabled: Boolean(date),
     retry: 1,
   });
   function shiftDate(offset: number) {
@@ -63,12 +65,12 @@ export function Panchang() {
       setFollowToday(false);
     }
   }
-  const dateLabel = new Intl.DateTimeFormat("en-IN", {
+  const dateLabel = date ? new Intl.DateTimeFormat("en-IN", {
     timeZone: mandir.timezone,
     day: "numeric",
     month: "long",
     year: "numeric",
-  }).format(new Date(`${date}T12:00:00+05:30`));
+  }).format(new Date(`${date}T12:00:00+05:30`)) : "Preparing today’s date…";
   const elements = data
     ? [
         {
@@ -102,14 +104,14 @@ export function Panchang() {
           <div className="mandir-panchang-date">
             <Lotus />
             <span className="mandir-overline">
-              {date === dateKey() ? "TODAY’S PANCHANG" : "DAILY PANCHANG"}
+              {!date || date === today ? "TODAY’S PANCHANG" : "DAILY PANCHANG"}
             </span>
             <h3>
-              {data?.weekday ??
+              {data?.weekday ?? (date ?
                 new Intl.DateTimeFormat("en-IN", {
                   weekday: "long",
                   timeZone: mandir.timezone,
-                }).format(new Date(`${date}T12:00:00+05:30`))}
+                }).format(new Date(`${date}T12:00:00+05:30`)) : "Today")}
             </h3>
             <p>{dateLabel}</p>
             <span className="mandir-panchang-location">
@@ -118,7 +120,7 @@ export function Panchang() {
             <div className="mandir-date-controls">
               <button
                 onClick={() => shiftDate(-1)}
-                disabled={date === "1900-01-01"}
+                disabled={!date || date === "1900-01-01"}
                 aria-label="Previous day"
               >
                 <ChevronLeft size={16} />
@@ -147,7 +149,7 @@ export function Panchang() {
               </label>
               <button
                 onClick={() => shiftDate(1)}
-                disabled={date === "2100-12-31"}
+                disabled={!date || date === "2100-12-31"}
                 aria-label="Next day"
               >
                 <ChevronRight size={16} />
