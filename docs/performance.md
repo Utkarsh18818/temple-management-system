@@ -29,6 +29,10 @@ Sevas and events start loading in parallel with the catalogue instead of waiting
 - Checked the actual image/Panchang cache headers. The pre-encoded hero is 56,282 bytes.
 - Baseline single warm HTTP samples: homepage response 647 ms, catalogue 1,059 ms and Panchang 214 ms. These are diagnostic samples, not mobile Core Web Vitals or a Lighthouse score. Removing the catalogue from the rendering path is independent of its response time.
 
+## Live deployment verification
+
+Frontend commit `a7e2ad7` deployed successfully on Render (`dep-dbd30enavr4c73996gig`). Live HTTPS checks returned 200, with the hero heading and WebP URL in initial HTML, a 56,282-byte hero, and the intended image/Panchang cache headers. A single warm homepage response sample was 467 ms; this is not a full-page load measurement. Browser checks confirmed lazy image loading, automatic gallery rotation when visible, populated Panchang, and no captured console errors. The existing SRMS devotee sign-in also succeeded in the local production build.
+
 ## Hosting limit
 
 [Render Free services sleep after 15 idle minutes and can take about a minute to restart](https://render.com/docs/free#spinning-down-on-idle). The backend is no longer required to display the landing page, but a sleeping frontend must still wake before it can return HTML. Reliable first-visit latency requires always-on hosting for the frontend and backend. Render lists $7/month per entry paid web service, approximately $14/month for these two services before taxes and usage charges. No billing plan has been changed.
