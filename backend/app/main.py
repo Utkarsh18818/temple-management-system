@@ -63,6 +63,16 @@ app = FastAPI(
 # ---------------------------------------------------------
 
 settings.validate_production()
+
+
+@app.middleware("http")
+async def prevent_identity_caching(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/api/v1/public/auth"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 app.include_router(public_history_router, prefix="/api/v1")
 
 

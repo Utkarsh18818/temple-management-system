@@ -180,6 +180,31 @@
   color: var(--mandir-ink);
   padding: 6px;
 }
+.mandir-logout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid var(--mandir-wine);
+  border-radius: 4px;
+  color: var(--mandir-wine);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.mandir-logout:hover { background: #f2e7df; }
+.mandir-logout:focus-visible { outline: 2px solid var(--mandir-wine); outline-offset: 3px; }
+@media (max-width: 767px) {
+  .mandir-logout { gap: 4px; padding: 6px; font-size: 11px; }
+  .mandir-logout svg { display: none; }
+  .mandir-nav:has(.mandir-logout) { flex-wrap: wrap; padding-block: 10px; }
+  .mandir-nav-actions:has(.mandir-logout) { margin-left: auto; }
+  .mandir-nav-actions:has(.mandir-logout) .mandir-account { display: none; }
+  .mandir-nav:has(.mandir-logout) .mandir-brand small { display: none; }
+}
 .mandir-auth-loading {
   width: 30px;
   height: 30px;

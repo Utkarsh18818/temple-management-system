@@ -35,6 +35,7 @@ type PublicAuthContextValue = {
     username: string,
     password: string,
     templeId: string,
+    panNumber?: string,
   ) => Promise<PublicDevoteeAuthResponse>;
   register: (
     payload: PublicDevoteeRegisterRequest,
@@ -140,12 +141,14 @@ export function PublicAuthProvider({
         username: string,
         password: string,
         templeId: string,
+        panNumber?: string,
       ) => {
         const response =
           await loginPublicDevotee(
             username,
             password,
             templeId,
+            panNumber,
           );
         await queryClient.cancelQueries();
         queryClient.clear();

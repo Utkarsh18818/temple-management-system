@@ -2,7 +2,8 @@ from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from app.core.pan import normalize_pan, encrypt_pan, mask_pan
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
@@ -39,12 +40,24 @@ class PublicDevoteeRegisterRequest(BaseModel):
     pincode: str | None = Field(default=None, max_length=10)
     gotra: str | None = Field(default=None, max_length=100)
     date_of_birth: str | None = Field(default=None, max_length=20)
+    pan_number: str | None = Field(default=None, max_length=20)
+
+    _normalize_pan = field_validator("pan_number")(normalize_pan)
 
 
 class PublicDevoteeLoginRequest(BaseModel):
     temple_id: UUID
     identifier: str = Field(min_length=1, max_length=255)
     password: str
+    pan_number: str | None = Field(default=None, max_length=20)
+
+    _normalize_pan = field_validator("pan_number")(normalize_pan)
+
+
+class PublicPanUpdateRequest(BaseModel):
+    pan_number: str | None = Field(max_length=20)
+
+    _normalize_pan = field_validator("pan_number")(normalize_pan)
 
 
 class PublicDevoteeResponse(BaseModel):
@@ -65,6 +78,7 @@ class PublicDevoteeResponse(BaseModel):
     date_of_birth: str | None
     is_verified: bool
     is_active: bool
+    pan_masked: str | None = None
 
 
 class PublicDevoteeAuthResponse(BaseModel):
@@ -256,6 +270,8 @@ def register_public_devotee(
         ),
         gotra=payload.gotra.strip() if payload.gotra else None,
         date_of_birth=date_of_birth,
+        pan_encrypted=encrypt_pan(payload.pan_number),
+        pan_masked=mask_pan(payload.pan_number),
         is_verified=False,
         is_active=True,
     )
@@ -337,6 +353,12 @@ def login_public_devotee(
             detail="Active devotee profile not found.",
         )
 
+    if payload.pan_number:
+        devotee.pan_encrypted = encrypt_pan(payload.pan_number)
+        devotee.pan_masked = mask_pan(payload.pan_number)
+        db.commit()
+        db.refresh(devotee)
+
     access_token = create_access_token(
         subject=str(user.id),
         role="VOLUNTEER",
@@ -369,4 +391,20 @@ def get_public_devotee_me(
             detail="Devotee profile not found.",
         )
 
+    return _to_public_devotee_response(devotee)
+
+
+@router.patch("/me/pan", response_model=PublicDevoteeResponse)
+def update_public_devotee_pan(
+    payload: PublicPanUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    devotee = get_devotee_for_user(current_user, db)
+    if not devotee or not devotee.is_active:
+        raise HTTPException(404, "Devotee profile not found.")
+    devotee.pan_encrypted = encrypt_pan(payload.pan_number)
+    devotee.pan_masked = mask_pan(payload.pan_number)
+    db.commit()
+    db.refresh(devotee)
     return _to_public_devotee_response(devotee)

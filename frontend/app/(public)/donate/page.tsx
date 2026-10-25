@@ -1,4 +1,6 @@
 "use client";
+import { usePublicAuth } from "@/features/public/PublicAuthContext";
+import { TransactionIdentity } from "@/components/public/TransactionIdentity";
 
 import { FormEvent, Suspense, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -51,6 +53,7 @@ const QUICK_AMOUNTS = [101, 501, 1001, 5001];
 function DonateForm() {
   const router = useRouter();
   const portal = useTemplePortal();
+  const { devotee } = usePublicAuth();
   const { data: temples, isLoading: templesLoading } = usePublicTemples();
 
   const templeId = portal.templeId;
@@ -59,9 +62,12 @@ function DonateForm() {
   const [donationType, setDonationType] = useState("GENERAL");
   const [purpose, setPurpose] = useState("");
 
-  const [donorName, setDonorName] = useState("");
-  const [donorPhone, setDonorPhone] = useState("");
-  const [donorEmail, setDonorEmail] = useState("");
+  const [nameOverride, setDonorName] = useState<string | null>(null);
+  const [phoneOverride, setDonorPhone] = useState<string | null>(null);
+  const [emailOverride, setDonorEmail] = useState<string | null>(null);
+  const donorName = nameOverride ?? [devotee?.first_name, devotee?.last_name].filter(Boolean).join(" ");
+  const donorPhone = phoneOverride ?? devotee?.phone ?? "";
+  const donorEmail = emailOverride ?? devotee?.email ?? "";
   const [panNumber, setPanNumber] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -333,6 +339,7 @@ function DonateForm() {
             </div>
 
             <div className="border-t border-stone-200 pt-6">
+              <TransactionIdentity />
               <h2 className="font-serif text-xl font-semibold text-stone-900">
                 Donor Details
               </h2>
@@ -405,6 +412,9 @@ function DonateForm() {
 
                   <input
                     id="panNumber"
+                    pattern="[A-Za-z]{5}[0-9]{4}[A-Za-z]"
+                    autoComplete="off"
+                    aria-describedby="donation-pan-help"
                     value={panNumber}
                     onChange={(event) =>
                       setPanNumber(event.target.value.toUpperCase())
@@ -414,6 +424,7 @@ function DonateForm() {
                     maxLength={10}
                     className="w-full rounded-lg border border-stone-300 px-4 py-3 uppercase outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-100"
                   />
+                  <p id="donation-pan-help" className="mt-2 text-xs text-stone-500">{devotee?.pan_masked ? `Leave blank to use saved PAN ${devotee.pan_masked}. Enter a different PAN only for this donation.` : "Optional. Five letters, four digits and one letter. Used for donation records."}</p>
                 </div>
               </div>
             </div>
@@ -488,5 +499,7 @@ function DonateForm() {
 }
 
 export default function DonatePage() {
-  return <Suspense fallback={<p className="p-8" role="status">Opening donation form…</p>}><DonateForm/></Suspense>;
+  const { devotee } = usePublicAuth();
+  const portal = useTemplePortal();
+  return <Suspense fallback={<p className="p-8" role="status">Opening donation form…</p>}><DonateForm key={`${portal.templeId}:${devotee?.id ?? "guest"}`}/></Suspense>;
 }

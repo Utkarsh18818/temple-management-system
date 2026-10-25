@@ -68,6 +68,85 @@ def test_devotee_cannot_access_management(world, path):
     assert response.status_code == 403, response.text
 
 
+def test_pan_profile_is_encrypted_masked_and_personal(world):
+    from app.core.pan import decrypt_pan
+    world["actor"]["user"] = world["users"]["VOLUNTEER"]
+    client = world["client"]
+    response = client.patch("/api/v1/public/auth/me/pan", json={"pan_number": " abcde1234f "})
+    assert response.status_code == 200, response.text
+    assert response.json()["pan_masked"] == "******234F"
+    assert "ABCDE1234F" not in response.text and "pan_encrypted" not in response.text
+    assert response.headers["cache-control"] == "no-store"
+    assert decrypt_pan(world["devotee"].pan_encrypted) == "ABCDE1234F"
+    assert "ABCDE1234F" not in world["devotee"].pan_encrypted
+    assert world["stranger"].pan_encrypted is None
+    assert client.patch("/api/v1/public/auth/me/pan", json={"pan_number": "invalid"}).status_code == 422
+    assert client.get("/api/v1/public/auth/me").json()["pan_masked"] == "******234F"
+    assert client.patch("/api/v1/public/auth/me/pan", json={"pan_number": None}).status_code == 200
+    assert world["devotee"].pan_encrypted is None
+
+
+def test_pan_update_cannot_target_another_temple(world):
+    user = world["users"]["VOLUNTEER"]
+    user.temple_id = world["other"].id
+    world["db"].commit()
+    world["actor"]["user"] = user
+    response = world["client"].patch("/api/v1/public/auth/me/pan", json={"pan_number": "ABCDE1234F"})
+    assert response.status_code == 404
+    assert world["devotee"].pan_encrypted is None
+
+
+def test_pan_registration_and_login_are_backwards_compatible(world):
+    from app.core.pan import decrypt_pan
+    client = world["client"]
+    payload = dict(temple_id=str(world["temple"].id), first_name="PAN test", email="pan-test@example.com", password="Test-Only@2026", pan_number="abcde1234f")
+    response = client.post("/api/v1/public/auth/register", json=payload)
+    assert response.status_code == 201, response.text
+    assert response.json()["devotee"]["pan_masked"] == "******234F"
+    assert "ABCDE1234F" not in response.text
+    login = dict(temple_id=payload["temple_id"], identifier=payload["email"], password=payload["password"])
+    assert client.post("/api/v1/public/auth/login", json=login).json()["devotee"]["pan_masked"] == "******234F"
+    record = world["db"].scalar(select(Devotee).where(Devotee.email == payload["email"]))
+    bad_login = client.post("/api/v1/public/auth/login", json={**login, "password": "wrong", "pan_number": "ZZZZZ9999Z"})
+    assert bad_login.status_code == 401
+    assert decrypt_pan(record.pan_encrypted) == "ABCDE1234F"
+    updated = client.post("/api/v1/public/auth/login", json={**login, "pan_number": "ZZZZZ9999Z"})
+    assert updated.status_code == 200 and updated.json()["devotee"]["pan_masked"] == "******999Z"
+    assert decrypt_pan(record.pan_encrypted) == "ZZZZZ9999Z"
+    payload.update(email="no-pan@example.com"); payload.pop("pan_number")
+    assert client.post("/api/v1/public/auth/register", json=payload).status_code == 201
+
+
+def test_donation_uses_only_same_temple_saved_pan(world, monkeypatch):
+    from app.core.dependencies import get_optional_current_user
+    from app.core.pan import encrypt_pan, decrypt_pan
+    from app.services.razorpay import razorpay_service
+    monkeypatch.setattr("app.api.v1.donations.acquire_numbering_lock", lambda *args: None)
+    monkeypatch.setattr("app.api.v1.public_donations.acquire_numbering_lock", lambda *args: None)
+    user = world["users"]["VOLUNTEER"]
+    app.dependency_overrides[get_optional_current_user] = lambda: user
+    world["devotee"].pan_encrypted = encrypt_pan("ABCDE1234F")
+    world["devotee"].pan_masked = "******234F"
+    world["db"].commit()
+    monkeypatch.setattr(razorpay_service, "create_order", lambda **kw: {"id": "order_" + str(uuid4())})
+    monkeypatch.setattr(razorpay_service, "_get_key_id", lambda: "rzp_test_isolated")
+    payload = dict(temple_id=str(world["temple"].id), amount="101", donor_name="Personal")
+    response = world["client"].post("/api/v1/public/donations", json=payload)
+    assert response.status_code == 201, response.text
+    record = world["db"].get(Donation, __import__("uuid").UUID(response.json()["donation_id"]))
+    assert record.pan_number == "******234F"
+    assert decrypt_pan(record.pan_encrypted) == "ABCDE1234F"
+    foreign = world["client"].post("/api/v1/public/donations", json={**payload, "temple_id": str(world["other"].id)})
+    assert foreign.status_code == 201, foreign.text
+    record = world["db"].get(Donation, __import__("uuid").UUID(foreign.json()["donation_id"]))
+    assert record.pan_encrypted is None and record.devotee_id is None
+
+
+def test_pan_update_requires_authentication(world):
+    app.dependency_overrides.pop(get_current_user)
+    assert world["client"].patch("/api/v1/public/auth/me/pan", json={"pan_number": "ABCDE1234F"}).status_code == 401
+
+
 def test_unassigned_staff_is_rejected(world):
     user = world["users"]["STAFF"]; user.temple_id = None
     world["actor"]["user"] = user

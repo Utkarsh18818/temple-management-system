@@ -1,5 +1,6 @@
 "use client";
 import { Suspense } from "react";
+import { PanInput } from "@/components/public/PanInput";
 import { TempleLink as Link } from "@/features/public/TempleContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -58,6 +59,7 @@ function PublicRegisterPage() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [panNumber, setPanNumber] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
@@ -121,6 +123,7 @@ function PublicRegisterPage() {
       last_name: lastName.trim() || null,
       email: email.trim(),
       phone: phone.trim() || null,
+      pan_number: panNumber.trim() || null,
       password,
       address: address.trim() || null,
       city: city.trim() || null,
@@ -355,6 +358,7 @@ function PublicRegisterPage() {
                   </h3>
 
                   <div className="space-y-5">
+                    <PanInput value={panNumber} onChange={setPanNumber} disabled={isSubmitting} />
 
                     <div>
                       <label

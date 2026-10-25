@@ -4,6 +4,74 @@
  */
 
 export interface paths {
+    "/api/v1/public/account/donations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Donations */
+        get: operations["donations_api_v1_public_account_donations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/account/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Receipts */
+        get: operations["receipts_api_v1_public_account_receipts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/account/receipts/{receipt_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Receipt */
+        get: operations["receipt_api_v1_public_account_receipts__receipt_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/account/receipts/{receipt_id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Receipt Pdf */
+        get: operations["receipt_pdf_api_v1_public_account_receipts__receipt_id__pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/donations": {
         parameters: {
             query?: never;
@@ -282,6 +350,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/payments/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Payment Summary */
+        get: operations["payment_summary_api_v1_payments_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/payments/{payment_id}": {
         parameters: {
             query?: never;
@@ -341,7 +426,14 @@ export interface paths {
         /** Update Event */
         put: operations["update_event_api_v1_events__event_id__put"];
         post?: never;
-        delete?: never;
+        /**
+         * Delete Event
+         * @description Permanently delete an event.
+         *
+         *     Only TEMPLE_ADMIN / SUPER_ADMIN users who have
+         *     access to the event's temple can perform this action.
+         */
+        delete: operations["delete_event_api_v1_events__event_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -532,6 +624,30 @@ export interface paths {
         get: operations["get_receipt_api_v1_receipts__receipt_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/receipts/{receipt_id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * View Receipt Pdf
+         * @description Return the generated receipt PDF.
+         *
+         *     Access is protected by the same temple-level receipt
+         *     authorization used by the receipt detail endpoint.
+         */
+        get: operations["view_receipt_pdf_api_v1_receipts__receipt_id__pdf_get"];
+        put?: never;
+        /** Generate Missing Receipt Pdf */
+        post: operations["generate_missing_receipt_pdf_api_v1_receipts__receipt_id__pdf_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -973,6 +1089,212 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/auth/me/pan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Public Devotee Pan */
+        patch: operations["update_public_devotee_pan_api_v1_public_auth_me_pan_patch"];
+        trace?: never;
+    };
+    "/api/v1/public/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Public Bookings
+         * @description Return bookings belonging only to the authenticated public devotee.
+         */
+        get: operations["get_public_bookings_api_v1_public_bookings_get"];
+        put?: never;
+        /**
+         * Create Public Booking
+         * @description Create a booking for the currently authenticated public devotee.
+         *
+         *     devotee_id is always resolved server-side from the authenticated user.
+         */
+        post: operations["create_public_booking_api_v1_public_bookings_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/bookings/{booking_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Public Booking
+         * @description Return one booking only if it belongs to the authenticated devotee.
+         */
+        get: operations["get_public_booking_api_v1_public_bookings__booking_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/donations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Public Donation
+         * @description Create a public donation and its Razorpay order.
+         *
+         *     Guests are allowed.
+         *
+         *     Authenticated devotees are automatically linked to
+         *     their Devotee record when they belong to the selected
+         *     temple.
+         */
+        post: operations["create_public_donation_api_v1_public_donations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/donations/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Verify Public Donation Payment
+         * @description Verify a Razorpay donation payment.
+         *
+         *     Signature verification is authoritative, so guests
+         *     can complete payment without an account.
+         *
+         *     When authenticated, the donation may optionally be
+         *     associated with the user's Devotee account.
+         */
+        post: operations["verify_public_donation_payment_api_v1_public_donations_verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/payments/booking/{booking_id}/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Booking Payment Order */
+        post: operations["create_booking_payment_order_api_v1_public_payments_booking__booking_id__order_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/payments/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify Booking Payment */
+        post: operations["verify_booking_payment_api_v1_public_payments_verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/payments/booking/{booking_id}/reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reconcile Booking Payment
+         * @description Recover a payment where Razorpay successfully captured
+         *     the payment but the browser-side verification callback
+         *     did not complete.
+         *
+         *     This is a server-to-server reconciliation against the
+         *     authenticated Razorpay API.
+         */
+        post: operations["reconcile_booking_payment_api_v1_public_payments_booking__booking_id__reconcile_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/payments/webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Razorpay Webhook
+         * @description Process Razorpay webhook events.
+         *
+         *     Supported events:
+         *     - payment.captured
+         *     - order.paid
+         *     - payment.failed
+         *
+         *     Supports both:
+         *     - Seva bookings
+         *     - Donations
+         *
+         *     Webhook processing is idempotent using
+         *     Razorpay's event ID.
+         */
+        post: operations["razorpay_webhook_api_v1_public_payments_webhook_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/": {
         parameters: {
             query?: never;
@@ -1048,30 +1370,8 @@ export interface components {
         };
         /** Body_login_api_v1_auth_login_post */
         Body_login_api_v1_auth_login_post: {
-            /** Grant Type */
-            grant_type?: string | null;
-            /** Username */
-            username: string;
-            /**
-             * Password
-             * Format: password
-             */
-            password: string;
-            /**
-             * Scope
-             * @default
-             */
-            scope: string;
-            /** Client Id */
-            client_id?: string | null;
-            /**
-             * Client Secret
-             * Format: password
-             */
-            client_secret?: string | null;
-        };
-        /** Body_login_public_devotee_api_v1_public_auth_login_post */
-        Body_login_public_devotee_api_v1_public_auth_login_post: {
+            /** Temple Id */
+            temple_id?: string | null;
             /** Grant Type */
             grant_type?: string | null;
             /** Username */
@@ -1627,6 +1927,8 @@ export interface components {
             booking_id: string | null;
             /** Transaction Id */
             transaction_id: string;
+            /** Gateway Order Id */
+            gateway_order_id: string | null;
             /** Amount */
             amount: string;
             /** Currency */
@@ -1655,16 +1957,137 @@ export interface components {
             /** Failure Reason */
             failure_reason?: string | null;
         };
+        /** PublicBookingCreateRequest */
+        PublicBookingCreateRequest: {
+            /**
+             * Seva Id
+             * Format: uuid
+             */
+            seva_id: string;
+            /** Slot Id */
+            slot_id?: string | null;
+            /**
+             * Booking Date
+             * Format: date
+             */
+            booking_date: string;
+            /**
+             * Quantity
+             * @default 1
+             */
+            quantity: number;
+            /** Special Request */
+            special_request?: string | null;
+        };
+        /** PublicBookingPaymentOrderResponse */
+        PublicBookingPaymentOrderResponse: {
+            /**
+             * Payment Id
+             * Format: uuid
+             */
+            payment_id: string;
+            /** Transaction Id */
+            transaction_id: string;
+            /**
+             * Booking Id
+             * Format: uuid
+             */
+            booking_id: string;
+            /** Amount */
+            amount: string;
+            /** Currency */
+            currency: string;
+            /** Razorpay Order Id */
+            razorpay_order_id: string;
+            /** Razorpay Key Id */
+            razorpay_key_id: string;
+        };
+        /** PublicBookingPaymentReconcileResponse */
+        PublicBookingPaymentReconcileResponse: {
+            /**
+             * Payment Id
+             * Format: uuid
+             */
+            payment_id: string;
+            /** Transaction Id */
+            transaction_id: string;
+            /**
+             * Booking Id
+             * Format: uuid
+             */
+            booking_id: string;
+            /** Razorpay Order Id */
+            razorpay_order_id: string;
+            /** Razorpay Payment Id */
+            razorpay_payment_id: string;
+            /** Amount */
+            amount: string;
+            /** Currency */
+            currency: string;
+            /** Payment Status */
+            payment_status: string;
+            /** Booking Status */
+            booking_status: string;
+            /** Reconciled */
+            reconciled: boolean;
+        };
+        /** PublicBookingPaymentVerifyRequest */
+        PublicBookingPaymentVerifyRequest: {
+            /** Razorpay Order Id */
+            razorpay_order_id: string;
+            /** Razorpay Payment Id */
+            razorpay_payment_id: string;
+            /** Razorpay Signature */
+            razorpay_signature: string;
+        };
+        /** PublicBookingPaymentVerifyResponse */
+        PublicBookingPaymentVerifyResponse: {
+            /**
+             * Payment Id
+             * Format: uuid
+             */
+            payment_id: string;
+            /** Transaction Id */
+            transaction_id: string;
+            /**
+             * Booking Id
+             * Format: uuid
+             */
+            booking_id: string;
+            /** Razorpay Order Id */
+            razorpay_order_id: string;
+            /** Razorpay Payment Id */
+            razorpay_payment_id: string;
+            /** Amount */
+            amount: string;
+            /** Currency */
+            currency: string;
+            /** Payment Status */
+            payment_status: string;
+            /** Booking Status */
+            booking_status: string;
+        };
         /** PublicDevoteeAuthResponse */
         PublicDevoteeAuthResponse: {
             /** Access Token */
             access_token: string;
-            /**
-             * Token Type
-             * @default bearer
-             */
+            /** Token Type */
             token_type: string;
             devotee: components["schemas"]["PublicDevoteeResponse"];
+        };
+        /** PublicDevoteeLoginRequest */
+        PublicDevoteeLoginRequest: {
+            /**
+             * Temple Id
+             * Format: uuid
+             */
+            temple_id: string;
+            /** Identifier */
+            identifier: string;
+            /** Password */
+            password: string;
+            /** Pan Number */
+            pan_number?: string | null;
         };
         /** PublicDevoteeRegisterRequest */
         PublicDevoteeRegisterRequest: {
@@ -1703,6 +2126,8 @@ export interface components {
             gotra?: string | null;
             /** Date Of Birth */
             date_of_birth?: string | null;
+            /** Pan Number */
+            pan_number?: string | null;
         };
         /** PublicDevoteeResponse */
         PublicDevoteeResponse: {
@@ -1742,6 +2167,103 @@ export interface components {
             is_verified: boolean;
             /** Is Active */
             is_active: boolean;
+            /** Pan Masked */
+            pan_masked?: string | null;
+        };
+        /** PublicDonationCreateRequest */
+        PublicDonationCreateRequest: {
+            /**
+             * Temple Id
+             * Format: uuid
+             */
+            temple_id: string;
+            /** Amount */
+            amount: number | string;
+            /**
+             * Donation Type
+             * @default GENERAL
+             */
+            donation_type: string;
+            /** Purpose */
+            purpose?: string | null;
+            /** Donor Name */
+            donor_name: string;
+            /** Donor Phone */
+            donor_phone?: string | null;
+            /** Donor Email */
+            donor_email?: string | null;
+            /** Pan Number */
+            pan_number?: string | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /** PublicDonationCreateResponse */
+        PublicDonationCreateResponse: {
+            /**
+             * Donation Id
+             * Format: uuid
+             */
+            donation_id: string;
+            /** Donation Number */
+            donation_number: string;
+            /** Amount */
+            amount: string;
+            /** Currency */
+            currency: string;
+            /**
+             * Payment Id
+             * Format: uuid
+             */
+            payment_id: string;
+            /** Transaction Id */
+            transaction_id: string;
+            /** Razorpay Order Id */
+            razorpay_order_id: string;
+            /** Razorpay Key Id */
+            razorpay_key_id: string;
+        };
+        /** PublicDonationPaymentVerifyRequest */
+        PublicDonationPaymentVerifyRequest: {
+            /** Razorpay Order Id */
+            razorpay_order_id: string;
+            /** Razorpay Payment Id */
+            razorpay_payment_id: string;
+            /** Razorpay Signature */
+            razorpay_signature: string;
+        };
+        /** PublicDonationPaymentVerifyResponse */
+        PublicDonationPaymentVerifyResponse: {
+            /**
+             * Donation Id
+             * Format: uuid
+             */
+            donation_id: string;
+            /** Donation Number */
+            donation_number: string;
+            /**
+             * Payment Id
+             * Format: uuid
+             */
+            payment_id: string;
+            /** Transaction Id */
+            transaction_id: string;
+            /** Razorpay Order Id */
+            razorpay_order_id: string;
+            /** Razorpay Payment Id */
+            razorpay_payment_id: string;
+            /** Amount */
+            amount: string;
+            /** Currency */
+            currency: string;
+            /** Payment Status */
+            payment_status: string;
+            /** Donation Status */
+            donation_status: string;
+        };
+        /** PublicPanUpdateRequest */
+        PublicPanUpdateRequest: {
+            /** Pan Number */
+            pan_number: string | null;
         };
         /** ReceiptCreate */
         ReceiptCreate: {
@@ -1756,7 +2278,6 @@ export interface components {
         };
         /** ReceiptResponse */
         ReceiptResponse: {
-            status?: string;
             /**
              * Id
              * Format: uuid
@@ -1786,6 +2307,11 @@ export interface components {
             pdf_path: string | null;
             /** Notes */
             notes: string | null;
+            /**
+             * Status
+             * @default ISSUED
+             */
+            status: string;
         };
         /** RegisterRequest */
         RegisterRequest: {
@@ -1796,7 +2322,6 @@ export interface components {
              * Format: uuid
              */
             role_id: string;
-            role_name?: string | null;
             /** Email */
             email?: string | null;
             /** Phone */
@@ -2197,6 +2722,7 @@ export interface components {
              * Format: uuid
              */
             role_id: string;
+            /** Role Name */
             role_name?: string | null;
             /** Email */
             email: string | null;
@@ -2238,6 +2764,132 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    donations_api_v1_public_account_donations_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DonationResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    receipts_api_v1_public_account_receipts_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    receipt_api_v1_public_account_receipts__receipt_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                receipt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    receipt_pdf_api_v1_public_account_receipts__receipt_id__pdf_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                receipt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_donations_api_v1_donations_get: {
         parameters: {
             query?: {
@@ -2803,6 +3455,40 @@ export interface operations {
             };
         };
     };
+    payment_summary_api_v1_payments_summary_get: {
+        parameters: {
+            query?: {
+                temple_id?: string | null;
+                date_from?: string | null;
+                date_to?: string | null;
+                currency?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_payment_api_v1_payments__payment_id__get: {
         parameters: {
             query?: never;
@@ -2998,6 +3684,35 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["EventResponse"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_event_api_v1_events__event_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -3442,6 +4157,68 @@ export interface operations {
         };
     };
     get_receipt_api_v1_receipts__receipt_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                receipt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceiptResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    view_receipt_pdf_api_v1_receipts__receipt_id__pdf_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                receipt_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    generate_missing_receipt_pdf_api_v1_receipts__receipt_id__pdf_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -4406,7 +5183,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/x-www-form-urlencoded": components["schemas"]["Body_login_public_devotee_api_v1_public_auth_login_post"];
+                "application/json": components["schemas"]["PublicDevoteeLoginRequest"];
             };
         };
         responses: {
@@ -4446,6 +5223,334 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublicDevoteeResponse"];
+                };
+            };
+        };
+    };
+    update_public_devotee_pan_api_v1_public_auth_me_pan_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicPanUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicDevoteeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_public_bookings_api_v1_public_bookings_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_public_booking_api_v1_public_bookings_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicBookingCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_public_booking_api_v1_public_bookings__booking_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_public_donation_api_v1_public_donations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicDonationCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicDonationCreateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_public_donation_payment_api_v1_public_donations_verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicDonationPaymentVerifyRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicDonationPaymentVerifyResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_booking_payment_order_api_v1_public_payments_booking__booking_id__order_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicBookingPaymentOrderResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    verify_booking_payment_api_v1_public_payments_verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicBookingPaymentVerifyRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicBookingPaymentVerifyResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reconcile_booking_payment_api_v1_public_payments_booking__booking_id__reconcile_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicBookingPaymentReconcileResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    razorpay_webhook_api_v1_public_payments_webhook_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-Razorpay-Signature"?: string | null;
+                "x-razorpay-event-id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

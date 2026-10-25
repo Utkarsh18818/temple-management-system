@@ -10,6 +10,9 @@ from app.models.base import Base, TimestampMixin, UUIDMixin
 class Devotee(UUIDMixin, TimestampMixin, Base):
     __tablename__ = "devotees"
 
+    pan_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
+    pan_masked: Mapped[str | None] = mapped_column(String(10), nullable=True)
+
     temple_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("temples.id"),

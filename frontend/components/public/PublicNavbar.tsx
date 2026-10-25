@@ -26,7 +26,7 @@ export function PublicNavbar() {
     <header className="mandir-header"><div className="mandir-container mandir-nav flex-wrap gap-3">
       <Link href={portal.home} className="mandir-brand"><span className="mandir-brand-mark"><MandirMark/></span><span><strong>{portal.temple.name}</strong><small>{[portal.temple.city,portal.temple.state].filter(Boolean).join(" · ") || "DEVOTEE PORTAL"}</small></span></Link>
       <nav aria-label="Temple navigation" className="flex flex-wrap items-center gap-4 text-sm"><Link href={portal.home}>Home</Link><Link href={`/temples/${portal.templeId}/sevas`}>Sevas</Link><Link href="/events">Events</Link><Link href="/festivals">Festivals</Link></nav>
-      <div className="mandir-nav-actions"><Link href={isAuthenticated?"/account":"/login"}>{isAuthenticated?`${devotee?.first_name}'s account`:"Sign in"}</Link><Link href="/donate" className="mandir-button mandir-button-small">Donate</Link>{isAuthenticated && <button onClick={logout} className="text-xs">Sign out</button>}</div>
+      <div className="mandir-nav-actions"><Link href={isAuthenticated?"/account":"/login"}>{isAuthenticated?`${devotee?.first_name}'s account`:"Sign in"}</Link><Link href="/donate" className="mandir-button mandir-button-small">Donate</Link>{isAuthenticated && <button type="button" onClick={logout} className="mandir-logout">Log out</button>}</div>
     </div></header>
   </>;
   return (
@@ -73,6 +73,11 @@ export function PublicNavbar() {
             ))}
           </nav>
           <div className="mandir-nav-actions">
+            {isAuthenticated && (
+              <button type="button" onClick={() => { logout(); setMobileOpen(false); }} className="mandir-logout">
+                <LogOut size={16} aria-hidden="true" /> Log out
+              </button>
+            )}
             {isLoading ? (
               <span
                 className="mandir-auth-loading"
@@ -136,7 +141,7 @@ export function PublicNavbar() {
                   setMobileOpen(false);
                 }}
               >
-                <LogOut size={16} /> Sign out
+                <LogOut size={16} /> Log out
               </button>
             )}
           </nav>

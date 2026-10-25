@@ -3,7 +3,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
+from app.core.pan import normalize_pan, decrypt_pan, encrypt_pan, mask_pan
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -56,6 +57,8 @@ class PublicDonationCreateRequest(BaseModel):
         default=None,
         max_length=20,
     )
+
+    _normalize_pan = field_validator("pan_number")(normalize_pan)
 
     notes: str | None = None
 
@@ -210,6 +213,9 @@ def create_public_donation(
         )
 
     donated_at = datetime.now(timezone.utc)
+    # Resolve saved identity only from the authenticated, same-temple profile.
+    saved_pan = decrypt_pan(devotee.pan_encrypted) if devotee else None
+    donor_pan = request.pan_number or saved_pan
 
     donation_number = generate_donation_number(
         donated_at,
@@ -230,7 +236,8 @@ def create_public_donation(
         donor_name=request.donor_name,
         donor_phone=request.donor_phone,
         donor_email=request.donor_email,
-        pan_number=request.pan_number,
+        pan_number=mask_pan(donor_pan),
+        pan_encrypted=encrypt_pan(donor_pan),
         status="PENDING",
         donated_at=donated_at,
         notes=request.notes,

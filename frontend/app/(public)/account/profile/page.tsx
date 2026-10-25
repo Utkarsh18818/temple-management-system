@@ -1,4 +1,5 @@
 "use client";
+import { TransactionIdentity } from "@/components/public/TransactionIdentity";
 
 import { TempleLink as Link } from "@/features/public/TempleContext";
 import {
@@ -100,6 +101,7 @@ export default function ProfilePage() {
           </div>
 
           <div className="p-7 sm:p-10">
+            <TransactionIdentity />
 
             <div>
               <h2 className="text-lg font-semibold text-stone-900">

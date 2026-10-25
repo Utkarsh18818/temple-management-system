@@ -1,4 +1,5 @@
 "use client";
+import { TransactionIdentity } from "@/components/public/TransactionIdentity";
 import { Suspense } from "react";
 import { TempleLink as Link } from "@/features/public/TempleContext";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -422,7 +423,7 @@ function BookingConfirmationPage() {
       }
 
       return response;
-    } catch (requestError) {
+    } catch {
       return null;
     } finally {
       setIsReconcilingPayment(false);
@@ -715,7 +716,7 @@ function BookingConfirmationPage() {
                 </button>
 
                 <p className="mt-3 text-xs text-stone-400">
-                  You will be redirected to Razorpay's secure
+                  You will be redirected to Razorpay&apos;s secure
                   payment window.
                 </p>
               </div>
@@ -934,6 +935,7 @@ function BookingConfirmationPage() {
                 Optional information for the temple team.
               </p>
 
+              <TransactionIdentity />
               <textarea
                 value={specialRequest}
                 onChange={(event) =>

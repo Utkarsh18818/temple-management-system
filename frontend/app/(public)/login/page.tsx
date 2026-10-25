@@ -1,5 +1,6 @@
 "use client";
 import { Suspense } from "react";
+import { PanInput } from "@/components/public/PanInput";
 import { TempleLink as Link } from "@/features/public/TempleContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
@@ -19,6 +20,7 @@ function PublicLoginPage() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [panNumber, setPanNumber] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -51,6 +53,7 @@ function PublicLoginPage() {
         username.trim(),
         password,
         portal.templeId,
+        panNumber,
       );
 
       router.replace(portalReturnPath(redirectTo, portal.templeId, portal.home));
@@ -233,6 +236,9 @@ function PublicLoginPage() {
                   </button>
                 </div>
               </div>
+
+              <PanInput value={panNumber} onChange={setPanNumber} disabled={isSubmitting}
+                help="Leave blank to use your saved PAN. Enter a PAN here only to save or replace it after a successful sign-in." />
 
               <button
                 type="submit"

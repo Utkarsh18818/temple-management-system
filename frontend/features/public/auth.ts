@@ -19,6 +19,7 @@ export type PublicDevoteeLoginRequest = {
   temple_id: string;
   identifier: string;
   password: string;
+  pan_number?: string;
 };
 
 export async function registerPublicDevotee(
@@ -40,11 +41,13 @@ export async function loginPublicDevotee(
   username: string,
   password: string,
   templeId: string,
+  panNumber?: string,
 ): Promise<PublicDevoteeAuthResponse> {
   const payload: PublicDevoteeLoginRequest = {
     temple_id: templeId,
     identifier: username.trim(),
     password,
+    pan_number: panNumber?.trim().toUpperCase() || undefined,
   };
 
   const response =
@@ -70,4 +73,10 @@ export async function getPublicDevoteeMe(): Promise<PublicDevotee> {
 
 export function logoutPublicDevotee(): void {
   clearAccessToken();
+}
+
+export async function updatePublicPan(panNumber: string): Promise<PublicDevotee> {
+  return apiJson<PublicDevotee>("/api/v1/public/auth/me/pan", "PATCH", {
+    pan_number: panNumber.trim().toUpperCase() || null,
+  });
 }
