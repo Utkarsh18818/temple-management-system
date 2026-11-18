@@ -23,7 +23,7 @@ export function PublicNavbar() {
   if(portal.temple && !portal.isPrimary) return <>
     <a href="#main-content" className="mandir-skip">Skip to content</a>
     <div className="mandir-topbar"><div className="mandir-container"><span>Temple portal</span><Link href="/temples">Choose another temple</Link></div></div>
-    <header className="mandir-header"><div className="mandir-container mandir-nav flex-wrap gap-3">
+    <header className="mandir-header"><div className="mandir-container mandir-nav mandir-tenant-nav flex-wrap gap-3">
       <Link href={portal.home} className="mandir-brand"><span className="mandir-brand-mark"><MandirMark/></span><span><strong>{portal.temple.name}</strong><small>{[portal.temple.city,portal.temple.state].filter(Boolean).join(" · ") || "DEVOTEE PORTAL"}</small></span></Link>
       <nav aria-label="Temple navigation" className="flex flex-wrap items-center gap-4 text-sm"><Link href={portal.home}>Home</Link><Link href={`/temples/${portal.templeId}/sevas`}>Sevas</Link><Link href="/events">Events</Link><Link href="/festivals">Festivals</Link></nav>
       <div className="mandir-nav-actions"><Link href={isAuthenticated?"/account":"/login"}>{isAuthenticated?`${devotee?.first_name}'s account`:"Sign in"}</Link><Link href="/donate" className="mandir-button mandir-button-small">Donate</Link>{isAuthenticated && <button type="button" onClick={logout} className="mandir-logout">Log out</button>}</div>

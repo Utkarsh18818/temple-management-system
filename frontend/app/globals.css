@@ -97,6 +97,21 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Grid items must be allowed to shrink around long names and transaction IDs. */
+.grid > * {
+  min-width: 0;
+}
+
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    min-width: 0;
+    max-width: 100%;
+    font-size: 16px;
+  }
+}
+
 button,
 input,
 textarea,
