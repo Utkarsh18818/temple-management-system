@@ -4,7 +4,6 @@ import NextLink from "next/link";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { createContext, Suspense, useContext, useEffect, useState, type ComponentProps } from "react";
 import { usePublicTemples } from "./hooks";
-import { useAuth } from "@/lib/auth/auth-context";
 import { isMandirTemple, primaryTempleIdentity } from "@/config/mandir";
 
 type Temple = Pick<NonNullable<ReturnType<typeof usePublicTemples>["data"]>[number], "id" | "name" | "code" | "address" | "city" | "state">;
@@ -24,13 +23,12 @@ export function PublicTempleProvider({children}:{children:React.ReactNode}) {
   const router = useRouter();
   const [query, setQuery] = useState<string | null>(null);
   const params = new URLSearchParams(query ?? "");
-  const {user} = useAuth();
   const temples = usePublicTemples({limit:100});
   const fromRoute = /^\/temples\/([0-9a-f-]{36})(?:\/|$)/i.exec(pathname)?.[1];
   const redirect = params.get("redirect") ?? "";
   const fromRedirect = /^\/temples\/([0-9a-f-]{36})(?:\/|$)/i.exec(redirect)?.[1];
   const primary = temples.data?.find(isMandirTemple) ?? primaryTempleIdentity;
-  const requestedId = fromRoute ?? params.get("temple_id") ?? fromRedirect ?? (pathname.startsWith("/account") ? user?.temple_id : undefined);
+  const requestedId = fromRoute ?? params.get("temple_id") ?? fromRedirect;
   const temple = requestedId
     ? temples.data?.find(t=>t.id===requestedId) ?? (requestedId === primary.id ? primary : undefined)
     : primary;

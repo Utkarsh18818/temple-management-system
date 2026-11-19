@@ -4,7 +4,54 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "") ||
   "http://localhost:8000";
 
-const ACCESS_TOKEN_KEY = "templeos_access_token";
+export type AuthPortal = "admin" | "devotee";
+
+const LEGACY_ACCESS_TOKEN_KEY = "templeos_access_token";
+const ACCESS_TOKEN_KEYS: Record<AuthPortal, string> = {
+  admin: "templeos_admin_access_token",
+  devotee: "templeos_devotee_access_token",
+};
+
+// Only storage routing uses the claim here. The server still validates the JWT
+// and permissions on every protected request.
+function migrateLegacyToken(): void {
+  const token = window.localStorage.getItem(LEGACY_ACCESS_TOKEN_KEY) ||
+    window.sessionStorage.getItem(LEGACY_ACCESS_TOKEN_KEY);
+  if (!token) return;
+
+  try {
+    const payload = token.split(".")[1];
+    const claims = JSON.parse(window.atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+    const portal: AuthPortal | null = claims.role === "VOLUNTEER" ? "devotee" :
+      ["SUPER_ADMIN", "TEMPLE_ADMIN", "STAFF"].includes(claims.role) ? "admin" : null;
+    if (portal && !window.localStorage.getItem(ACCESS_TOKEN_KEYS[portal])) {
+      window.localStorage.setItem(ACCESS_TOKEN_KEYS[portal], token.trim());
+    }
+  } catch {
+    // An unreadable legacy token cannot be restored to either portal.
+  }
+  window.localStorage.removeItem(LEGACY_ACCESS_TOKEN_KEY);
+  window.sessionStorage.removeItem(LEGACY_ACCESS_TOKEN_KEY);
+}
+
+export function subscribeToSession(
+  portal: AuthPortal,
+  listener: () => void,
+): () => void {
+  const eventName = `templeos:session:${portal}`;
+  const storageChanged = (event: StorageEvent) => {
+    if (event.storageArea === window.localStorage &&
+        (event.key === null || event.key === ACCESS_TOKEN_KEYS[portal])) {
+      listener();
+    }
+  };
+  window.addEventListener(eventName, listener);
+  window.addEventListener("storage", storageChanged);
+  return () => {
+    window.removeEventListener(eventName, listener);
+    window.removeEventListener("storage", storageChanged);
+  };
+}
 
 type ApiPath = keyof paths;
 
@@ -31,14 +78,15 @@ type RequestOptions = {
   signal?: AbortSignal;
 };
 
-export function getAccessToken(): string | null {
+export function getAccessToken(portal: AuthPortal = "admin"): string | null {
   if (typeof window === "undefined") {
     return null;
   }
 
+  migrateLegacyToken();
   const token =
     window.localStorage.getItem(
-      ACCESS_TOKEN_KEY,
+      ACCESS_TOKEN_KEYS[portal],
     );
 
   if (!token) {
@@ -52,6 +100,7 @@ export function getAccessToken(): string | null {
 
 export function setAccessToken(
   token: string,
+  portal: AuthPortal = "admin",
 ): void {
   if (typeof window === "undefined") {
     return;
@@ -65,31 +114,32 @@ export function setAccessToken(
     );
   }
 
+  migrateLegacyToken();
   window.localStorage.setItem(
-    ACCESS_TOKEN_KEY,
+    ACCESS_TOKEN_KEYS[portal],
     cleanToken,
   );
-  window.dispatchEvent(new Event("templeos:session"));
+  window.dispatchEvent(new Event(`templeos:session:${portal}`));
 }
 
-export function clearAccessToken(): void {
+export function clearAccessToken(portal: AuthPortal = "admin"): void {
   if (typeof window === "undefined") {
     return;
   }
 
+  migrateLegacyToken();
   window.localStorage.removeItem(
-    ACCESS_TOKEN_KEY,
+    ACCESS_TOKEN_KEYS[portal],
   );
 
   /*
-   * Remove the legacy sessionStorage token as well.
-   * This prevents an old session token from surviving
-   * after logout or migration.
+   * Remove any tab-local copy for this portal too. The other portal's session
+   * must remain untouched.
    */
   window.sessionStorage.removeItem(
-    ACCESS_TOKEN_KEY,
+    ACCESS_TOKEN_KEYS[portal],
   );
-  window.dispatchEvent(new Event("templeos:session"));
+  window.dispatchEvent(new Event(`templeos:session:${portal}`));
 }
 
 function getErrorMessage(
@@ -197,7 +247,10 @@ export async function apiRequest<T>(
 
   const publicCatalog = (!options.method || options.method === "GET") &&
     /^\/api\/v1\/public\/(?:temples|sevas)(?:\/|\?|$)/.test(path);
-  const token = publicCatalog ? null : getAccessToken();
+  const publicRequest = /^\/api\/v1\/public(?:\/|\?|$)/.test(path);
+  const loginRequest = /^\/api\/v1\/(?:public\/)?auth\/(?:login|register)(?:\?|$)/.test(path);
+  const token = publicCatalog || loginRequest ? null :
+    getAccessToken(publicRequest ? "devotee" : "admin");
 
   if (token) {
     headers.set(

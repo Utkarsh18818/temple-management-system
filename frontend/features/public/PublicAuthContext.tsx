@@ -15,6 +15,7 @@ import {
 import {
   ApiError,
   getAccessToken,
+  subscribeToSession,
 } from "@/lib/api/client";
 
 import {
@@ -66,7 +67,7 @@ export function PublicAuthProvider({
     useCallback(async (): Promise<
       PublicDevotee | null
     > => {
-      const token = getAccessToken();
+      const token = getAccessToken("devotee");
 
       if (!token) {
         setDevotee(null);
@@ -76,13 +77,13 @@ export function PublicAuthProvider({
       try {
         const currentDevotee =
           await getPublicDevoteeMe();
-        if (getAccessToken() !== token) return null;
+        if (getAccessToken("devotee") !== token) return null;
 
         setDevotee(currentDevotee);
 
         return currentDevotee;
       } catch (error) {
-        if (getAccessToken() !== token) return null;
+        if (getAccessToken("devotee") !== token) return null;
         if (error instanceof ApiError && (error.status === 403 || error.status === 404)) {
           setDevotee(null);
           return null;
@@ -130,9 +131,7 @@ export function PublicAuthProvider({
 
   useEffect(() => {
     const changed = () => { void refreshUser(); };
-    window.addEventListener("templeos:session", changed);
-    window.addEventListener("storage", changed);
-    return () => { window.removeEventListener("templeos:session", changed); window.removeEventListener("storage", changed); };
+    return subscribeToSession("devotee", changed);
   }, [refreshUser]);
 
   const login =

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { apiRequest } from "../lib/api/client.ts";
 
 globalThis.window = {
-  localStorage: { getItem: () => "isolated-test-token" },
+  localStorage: { getItem: key => key === "templeos_devotee_access_token" ? "isolated-test-token" : null },
   sessionStorage: { getItem: () => null },
 };
 const requests = [];

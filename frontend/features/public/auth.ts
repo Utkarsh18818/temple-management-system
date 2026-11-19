@@ -32,7 +32,7 @@ export async function registerPublicDevotee(
       payload,
     );
 
-  setAccessToken(response.access_token);
+  setAccessToken(response.access_token, "devotee");
 
   return response;
 }
@@ -57,7 +57,7 @@ export async function loginPublicDevotee(
       payload,
     );
 
-  setAccessToken(response.access_token);
+  setAccessToken(response.access_token, "devotee");
 
   return response;
 }
@@ -72,7 +72,7 @@ export async function getPublicDevoteeMe(): Promise<PublicDevotee> {
 }
 
 export function logoutPublicDevotee(): void {
-  clearAccessToken();
+  clearAccessToken("devotee");
 }
 
 export async function updatePublicPan(panNumber: string): Promise<PublicDevotee> {

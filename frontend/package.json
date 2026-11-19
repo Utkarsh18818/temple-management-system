@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:auth": "node scripts/check-portal-sessions.mjs && node scripts/check-public-request-auth.mjs"
   },
   "dependencies": {
     "@grahan/vedic": "1.0.1",

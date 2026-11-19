@@ -18,6 +18,7 @@ import {
   ApiError,
   clearAccessToken,
   getAccessToken,
+  subscribeToSession,
 } from "@/lib/api/client";
 
 import type { components } from "@/types/api";
@@ -121,9 +122,7 @@ export function AuthProvider({
 
   useEffect(() => {
     const changed = () => { void refreshUser(); };
-    window.addEventListener("templeos:session", changed);
-    window.addEventListener("storage", changed);
-    return () => { window.removeEventListener("templeos:session", changed); window.removeEventListener("storage", changed); };
+    return subscribeToSession("admin", changed);
   }, [refreshUser]);
 
   const login = useCallback(

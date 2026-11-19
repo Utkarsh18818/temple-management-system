@@ -16,7 +16,7 @@ import {
 
 import { usePublicAuth } from "@/features/public/PublicAuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/api/client";
+import { apiRequest, getAccessToken } from "@/lib/api/client";
 
 function formatDate(value: string) {
   const date = new Date(value);
@@ -59,12 +59,7 @@ async function openReceiptPdf(receiptId: string) {
     process.env.NEXT_PUBLIC_API_URL ??
     "http://localhost:8000";
 
-  const token =
-    typeof window !== "undefined"
-      ? window.localStorage.getItem(
-          "templeos_access_token",
-        )
-      : null;
+  const token = getAccessToken("devotee");
 
   if (!token) {
     throw new Error("Please sign in again to view your receipt.");

@@ -18,9 +18,6 @@ export type LoginCredentials = {
   temple_id?: string;
 };
 
-const ACCESS_TOKEN_KEY =
-  "templeos_access_token";
-
 export async function login(
   credentials: LoginCredentials,
 ): Promise<TokenResponse> {
@@ -48,47 +45,6 @@ export async function login(
    * Store through the central API client.
    */
   setAccessToken(accessToken);
-
-  /*
-   * Explicit browser-side persistence.
-   *
-   * This is intentionally kept here as a defensive
-   * guarantee for the authentication boundary.
-   */
-  if (typeof window !== "undefined") {
-    sessionStorage.setItem(
-      ACCESS_TOKEN_KEY,
-      accessToken,
-    );
-
-    localStorage.setItem(
-      ACCESS_TOKEN_KEY,
-      accessToken,
-    );
-
-    /*
-     * Fail immediately if the browser refused
-     * to persist the authentication token.
-     */
-    const sessionToken =
-      sessionStorage.getItem(
-        ACCESS_TOKEN_KEY,
-      );
-
-    const localToken =
-      localStorage.getItem(
-        ACCESS_TOKEN_KEY,
-      );
-
-    if (
-      sessionToken !== accessToken ||
-      localToken !== accessToken
-    ) {
-      throw new Error(
-        "Unable to persist the authentication session in this browser.",
-      );
-    }
-  }
 
   return response;
 }

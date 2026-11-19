@@ -5,6 +5,7 @@ import { PublicTempleProvider } from "@/features/public/TempleContext";
 import { PublicNavbar } from "@/components/public/PublicNavbar";
 import { PublicFooter } from "@/components/public/PublicFooter";
 import { PublicAuthProvider } from "@/features/public/PublicAuthContext";
+import { QueryProvider } from "@/components/providers/query-provider";
 import type { Metadata } from "next";
 import "./mandir.css";
 
@@ -20,7 +21,7 @@ export default function PublicLayout({
 }) {
   return (
     <Suspense fallback={<p className="p-10" role="status">Opening temple portal…</p>}>
-    <PublicTempleProvider><PublicAuthProvider>
+    <QueryProvider><PublicTempleProvider><PublicAuthProvider>
       <div className="mandir-public min-h-screen">
         <PublicNavbar />
 
@@ -28,7 +29,7 @@ export default function PublicLayout({
 
         <PublicFooter />
       </div>
-    </PublicAuthProvider></PublicTempleProvider>
+    </PublicAuthProvider></PublicTempleProvider></QueryProvider>
     </Suspense>
   );
 }
